@@ -1,0 +1,7 @@
+# Haskell/Hakyll temporary files #
+##################################
+*.hi
+*.o
+_site/
+_cache/
+site
