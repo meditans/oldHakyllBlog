@@ -2,6 +2,8 @@
 title: Easy Haskell/NixOS setup in a VM
 ---
 
+WARNING: THIS POST IS NOW WAY OBSOLETE
+
 I set up a more detailed guide to obtain my setup
 
 -   download the [NixOS-14.04 VM appliance](http://nixos.org/releases/nixos/latest-iso-minimal-x86_64-linux).
