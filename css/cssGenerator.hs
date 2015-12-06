@@ -2,6 +2,7 @@
 
 import Clay
 import Clay.Stylesheet (StyleM)
+import qualified Clay.Font as F
 import Prelude hiding (div)
 
 main :: IO ()
@@ -19,12 +20,42 @@ main = putCss $ do
     borderRight solid (px 2) base01
     marginBottom (px 30)
     posizionaOrizzontalmente
+    overflow auto
 
   div # "#logo" ? do
     display inline
 
   div # "#navigation" ? do
+    margin (px 10) (px 50) (px 10) (px 50)
     float floatRight
+
+  div # "#navigation" |> ul ? do
+    overflow auto
+    listStyleType none
+
+  div # "#navigation" |> ul |> li ? do
+    height (px 25)
+    float floatLeft
+    marginRight (px 0)
+    borderRight solid (px 2) base1
+    paddingLeft (px 20)
+    paddingRight (px 20)
+
+  div # "#navigation" |> ul |> li # lastChild ? do
+    borderRightStyle none
+
+  div # "#navigation" |> ul |> li |> a ? do
+    textDecoration none
+    color base01
+    textTransform uppercase
+    transition "all" (sec 0.2) ease (sec 0)
+
+  div # "#navigation" |> ul |> li |> a # hover ? do
+    color base1
+
+  div # "#navigation" |> ul |> li |> a # active ? do
+    fontWeight bold
+    color mRed
 
   div # "#content" ? do
     background  base3
@@ -34,10 +65,21 @@ main = putCss $ do
 
   div # "#footer" ? do
     marginTop (px 30)
-    background  base3
-    border      solid (px 3) base1
     posizionaOrizzontalmente
-    marginBottom (px 30)
+    fontSizeCustom F.small
+
+  -- Stiliamo i link dentro la lista
+  li ? do
+    listStyleType none
+
+  li |> a ? do
+    color mOrange
+
+  li |> u ? do
+    fontStyle italic
+    textDecoration none
+
+  highlightSource
 
 
 -- Dark background colors
@@ -81,3 +123,34 @@ posizionaOrizzontalmente = do
   width        (pct 65)
   paddingRight (pct 5)
   marginRight  (pct 12.5)
+
+
+highlightSource :: Css
+highlightSource = do
+  pre ? do
+    backgroundColor base2
+    border solid (px 3) base1
+    padding (px 20) (px 20) (px 20) (px 20)
+    -- KeyWord
+    star # ".sourceCode" |> star # ".kw" ? color mBlue
+    -- DataType
+    star # ".sourceCode" |> star # ".dt" ? do color mRed; fontWeight bold
+    -- Decimal Value, BaseN, Float
+    star # ".sourceCode" |> star # ".dv" ? color mMagenta
+    -- Char
+    star # ".sourceCode" |> star # ".ch" ? color mRed
+    -- String
+    star # ".sourceCode" |> star # ".st" ? color mCyan
+    -- Comment
+    star # ".sourceCode" |> star # ".co" ? do color base1; fontStyle italic
+    -- Other
+    -- star # ".sourceCode" |> star # ".ot" ? color base01
+    -- .sourceCode .ot { color: #A57800; }
+    -- Alert
+    star # ".sourceCode" |> star # ".al" ? color mOrange
+    -- FunctionTok
+    star # ".sourceCode" |> star # ".fu" ? color mBlue
+    -- -- RegionMarkerTok
+    -- .sourceCode .re { }
+    -- -- ErrorTok
+    -- .sourceCode .er { color: #D30102; font-weight: bold; }
