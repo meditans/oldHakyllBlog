@@ -1,0 +1,356 @@
+---
+title: A simple lens tutorial
+---
+
+** Contenuto dei moduli di Control.Lens
+Lista presa dalla [[https://hackage.haskell.org/package/lens][lista dei moduli]]
+*** Control
+**** Exception
+***** Control.Exception.Lens
+**** Control.Lens
+***** Control.Lens.At
+Lenti che possono essere usate per leggere, scrivere, modificare i valori
+associati ad una chiave in containers tipo Map. Attenzione, non Array, perche'
+non e' possibile fare valere le leggi delle lenti.
+Poi ci sono i traversal che ti lasciano traversare una certa chiave, oppure un
+indice in una lista o Seq.
+
+Che relazione c'e' tra le due? ~ix k = at k . traverse~
+
+
+Esempi di utilizzo:
+Snippet iniziale
+#+BEGIN_SRC haskell
+import Control.Lens
+import Data.Map
+
+mappa :: Map Int String
+mappa = fromList [(1,"uno"), (2,"due"), (3,"tre")]
+#+END_SRC
+
+Ora, questo non funziona:
+#+BEGIN_SRC haskell
+(at 2 .~ "nooo") mappa
+#+END_SRC
+
+E questo in essenza perche' il tipo di at e'
+=at :: Index m -> Lens' m (Maybe (IxValue m))=
+il tipo di =.~= e' =ASetter s t a b -> b -> s -> t=
+Quello che ci interessa veramente e' qualcosa come =?~= che ha tipo:
+=(?~) :: ASetter s t a (Maybe b) -> b -> s -> t=
+
+La domanda e', come avremmo fatto a trovare questo tipo? Beh vogliamo settare
+qualcosa, sappiamo che ASetter e' quello che dobbiamo cercare.  Quindi hoogliamo
+qualcosa come =ASetter s t a (Maybe b) -> b -> t=, cosa che ci consente di
+trovare quanto volevamo. Ora, nel caso specifico non ho hooglato questo, ma lo
+terro' presente per le prossime volte.
+
+Possiamo allora scrivere:
+#+BEGIN_SRC haskell
+(at 1 ?~ "cane") mappa
+#+END_SRC
+
+Tra l'altro sarebbe meglio cambiare le chiavi di questa mappa perche' non sembri
+un indice, cosa che e' un poco inutile.
+
+Vediamo cosa possiamo dire per quanto riguarda =ix=. 
+
+Credo che il punto principale sia
+#+BEGIN_SRC haskell
+view (ix 1) mappa
+ --> "uno" 
+
+view (at 1) mappa
+ --> Just "uno"
+
+view (ix 6) mappa
+ --> ""            -- per capire questo, guardare traversal
+
+view (at 6) mappa
+ --> Nothing
+#+END_SRC
+
+che in effetti getta luce anche sull'identita' che abbiamo scritto sopra.
+A questo punto notiamo che possiamo scrivere
+
+#+BEGIN_SRC haskell
+(at 1 .~ "cane") mappa
+#+END_SRC
+
+senza bisogno di usare =?~= come avevamo fatto per =at=.
+
+Diamo un'occhiata anche a =contains=. La cosa interessante e' che e' una lente.
+Quindi possiamo eliminare o aggiungere l'appartenenza? Non per la mappa, perche'
+non ne ha le istanze, ma per gli insiemi, che sono in effetti l'unica cosa ovvia
+per appartenenza/non appartenenza senza ulteriori dettagli.
+***** Control.Lens.Combinators
+This lets the subset of users who vociferously disagree about the full scope and
+set of operators that should be exported from lens to not have to look at any
+operator with which they disagree. Quindi niente da investigare qui. 
+***** Control.Lens.Cons
+Attaccare a destra e a sinistra degli elementi. Snoc e cons.  Alcune cose, come
+=<|=, =cons=, =uncons=, sono semplicemente delle funzioni che usano le
+typeclasses, le lenti cominciano con =_head= e =_tail=, che sono traversal.
+***** Control.Lens.Each
+Questo essenzialmente esporta solo la classe =Each= e il traversal =each=. Quindi
+si usa come tutti gli altri traversal. Gli esempi fatti bastano.
+***** Control.Lens.Empty
+Questo modulo ci consegna solamente il prisma =_Empty=, che ci dice se una
+struttura e' vuota, e ha molte delle strutture interessanti.
+***** TODO Control.Lens.Equality
+Uguaglianza di tipi, per modificare le lenti.
+***** Control.Lens.Extras
+=is=, che fa vedere se un prisma matcha. Qualcosa come =is _Left (Left 4)=
+Anche tutto Data.Data.Lens, quindi essenzialmente i =*plate= e cose del genere.
+Il punto e' che questo modulo non e' importato da =Control.Lens=
+***** TODO Control.Lens.Fold
+=Fold s a= descrive come estrarre risultati multipli da un container in una
+maniera compatibile con il resto delle ottiche. C'e' anche una convenzione che
+riesce a ridare tutti i combinatori di =Foldable=, con il suffisso =Of=
+Quello che lo differenzia dal =Traversal= e' che e' sola lettura.
+***** TODO Control.Lens.Getter
+Un =Getter s a= e', semanticamente, =s -> a=, flippato in cps, =(a -> r) -> s ->
+r=, e poi decorato con un =Const=. Il =Getter= non e' altro che un =Getting= con
+un forall.
+
+Quindi perche' usare Getting? Dalla documentazione: Most Getter combinators are
+able to be used with both a Getter or a Fold in limited situations, to do so,
+they need to be monomorphic in what we are going to extract with Const. To be
+compatible with Lens, Traversal and Iso we also restricted choices of the
+irrelevant t and b parameters. Essenzialmente e' una questione di istanziazione
+con tipi monomorfi.
+
+Dunque, essendo una funzione, dobbiamo avere delle funzioni di conversione.
+=to= e =ito= trasforma una funzione in un =Getter= e in un =IndexedGetter=.
+
+=like= e' la funzione costante, che permette di scrivere cose come =foo failing
+like 0= 
+
+
+***** Control.Lens.Indexed
+***** Control.Lens.Iso
+***** Control.Lens.Lens
+***** Control.Lens.Level
+***** Control.Lens.Operators
+***** Control.Lens.Plated
+***** Control.Lens.Prism
+***** Control.Lens.Reified
+***** Control.Lens.Review
+***** Control.Lens.Setter
+***** Control.Lens.TH
+***** Control.Lens.Traversal
+***** Control.Lens.Tuple
+***** Control.Lens.Type
+***** Control.Lens.Wrapped
+***** Control.Lens.Zoom
+**** Monad
+***** Error
+****** Control.Monad.Error.Lens
+***** Primitive
+****** Control.Monad.Primitive.Lens
+**** Parallel
+***** Strategies
+****** Control.Parallel.Strategies.Lens
+**** Seq
+****** Control.Seq.Lens
+*** Data
+**** Array
+        Data.Array.Lens
+**** Bits
+        Data.Bits.Lens
+**** ByteString
+        Lazy
+            Data.ByteString.Lazy.Lens
+        Data.ByteString.Lens
+        Strict
+            Data.ByteString.Strict.Lens
+**** Complex
+        Data.Complex.Lens
+**** Data
+        Data.Data.Lens
+**** Dynamic
+        Data.Dynamic.Lens
+**** HashSet
+        Data.HashSet.Lens
+**** IntSet
+        Data.IntSet.Lens
+**** List
+        Data.List.Lens
+**** Map
+        Data.Map.Lens
+**** Sequence
+        Data.Sequence.Lens
+**** Set
+        Data.Set.Lens
+**** Text
+        Lazy
+            Data.Text.Lazy.Lens
+        Data.Text.Lens
+        Strict
+            Data.Text.Strict.Lens
+    Tree
+        Data.Tree.Lens
+    Typeable
+        Data.Typeable.Lens
+    Vector
+        Generic
+            Data.Vector.Generic.Lens
+        Data.Vector.Lens
+*** GHC
+**** Generics
+        GHC.Generics.Lens
+*** Generics
+    Deriving
+        Generics.Deriving.Lens
+*** Language
+    Haskell
+        TH
+            Language.Haskell.TH.Lens
+*** Numeric
+    Numeric.Lens
+*** System
+    Exit
+        System.Exit.Lens
+    FilePath
+        System.FilePath.Lens
+    IO
+        Error
+            System.IO.Error.Lens
+
+
+** Spiegazione dei tipi in Control.Lens.Types
+
+*** Common Subsection
+Il tipo più generale è: 
+
+#+BEGIN_SRC haskell
+type Optical p q f s t a b = p a (f b) -> q s (f t)
+#+END_SRC
+
+Da questo deriva:
+
+**** Unificando i profuntori
+#+BEGIN_SRC haskell
+type Optic p f s t a b = p a (f b) -> p s (f t)
+#+END_SRC
+
+Da questo deriva:
+***** unificando i tipi
+#+BEGIN_SRC haskell
+type Optic' p f s a = Optic p f s s a a
+#+END_SRC
+***** specificando il profuntore
+#+BEGIN_SRC haskell
+type LensLike f s t a b = Optic (->) f s t a b
+#+END_SRC
+**** Specificando solo il secondo profuntore a freccia
+#+BEGIN_SRC haskell
+type Over p f s t a b = Optical p (->) f s t a b
+#+END_SRC
+
+da questo deriva:
+***** p è un profuntore indiciato da i (e allora tengo solo i come parametro)
+#+BEGIN_SRC haskell
+type IndexedLensLike i f s t a b = forall p. Indexable i p => p a (f b) -> s -> f t 
+#+END_SRC
+*** Lens, Folds, Traversals
+**** Diversi constraint per diversi tipi:
+Qui ho settato tutti i profuntori a (->) e pretendo che f sia Funtore.
+#+BEGIN_SRC haskell
+type Lens s t a b = forall f. Functor f => (a -> f b) -> s -> f t 
+#+END_SRC
+
+Qui ho settato i profuntori a (->) e pretendo che f sia Appicative.
+#+BEGIN_SRC haskell
+type Traversal s t a b = forall f. Applicative f => (a -> f b) -> s -> f t
+#+END_SRC
+
+Qui ho settato i profuntori a (->) e pretendo che f sia Apply.
+#+BEGIN_SRC haskell
+type Traversal1 s t a b = forall f. Apply f => (a -> f b) -> s -> f t
+#+END_SRC
+
+Qui ho settato i profuntori a (->) e pretendo che f sia Setter.
+#+BEGIN_SRC haskell
+type Setter s t a b = forall f. Settable f => (a -> f b) -> s -> f t
+#+END_SRC
+**** Ora ce ne sono alcuni che non variano il tipo
+
+Questo non varia il tipo, e ha in più la clausola del Controvariante
+#+BEGIN_SRC haskell
+type Getter s a = forall f. (Contravariant f, Functor f) => (a -> f a) -> s -> f s
+#+END_SRC
+
+da cui, per inciso, deriva Getting:
+#+BEGIN_SRC haskell
+type Getting r s a = (a -> Const r a) -> s -> Const r s
+#+END_SRC
+
+È lo stesso di prima, ma è anche applicativo:
+#+BEGIN_SRC haskell
+type Fold s a = forall f. (Contravariant f, Applicative f) => (a -> f a) -> s -> f s 
+#+END_SRC
+
+Ancora, ora con la constraint Apply, notiamo che questo rappresenta qualcosa che ha almeno 1 target:
+#+BEGIN_SRC haskell
+type Fold1 s a = forall f. (Contravariant f, Apply f) => (a -> f a) -> s -> f s
+#+END_SRC
+*** Indexed part
+La parte indexed ripete la stessa struttura per quanto riguarda i profuntori indicizzabili.
+*** Index-Preserving part
+La parte index-preserving ripete la stessa struttura per quanto riguarda i profuntori Conjoined
+*** Other
+C'è equality, che è al variare completo di p ed f (non richiedo che siano profuntori)
+#+BEGIN_SRC haskell
+type Equality s t a b = forall p f. p a (f b) -> p s (f t)
+#+END_SRC
+
+Stessa cosa Iso, ma f deve essere funtore e p profuntore
+#+BEGIN_SRC haskell
+type Iso s t a b = forall p f. (Profunctor p, Functor f) => p a (f b) -> p s (f t)
+#+END_SRC
+
+Infine prism, che vuole che in più di Iso, vuole che il profuntore sia Choice
+#+BEGIN_SRC haskell
+type Prism s t a b = forall p f. (Choice p, Applicative f) => p a (f b) -> p s (f t)
+#+END_SRC
+
+Inoltre review, che vuole una specifica combinazione di constraints:
+#+BEGIN_SRC haskell
+type Review t b = forall p f. (Choice p, Bifunctor p, Settable f) => Optic' p f t b
+#+END_SRC
+
+E questo buffo AReview:
+#+BEGIN_SRC haskell
+type AReview t b = Optic' Tagged Identity t b 
+#+END_SRC
+
+** Spiegazione dei profuntori
+
+*** Spiegazione basilare e indexed
+
+*** Spiegazione di Choice
+#+BEGIN_SRC haskell
+  class Profunctor p => Choice p where
+
+  -- The generalization of Costar of Functor that is strong with respect to
+  -- Either.
+
+  -- Note: This is also a notion of strength, except with regards to another
+  -- monoidal structure that we can choose to equip Hask with: the cocartesian
+  -- coproduct.
+
+  left' :: p a b -> p (Either a c) (Either b c)
+  right' :: p a b -> p (Either c a) (Either c b)
+#+END_SRC
+
+** Spiegazione dei tipi di funtori
+
+*** Functor, Apply (Applicative - pure), Applicative
+
+*** Settable
+Anything Settable must be isomorphic to the Identity Functor.
+
+#+BEGIN_SRC haskell
+class (Applicative f, Distributive f, Traversable f) => Settable f
+#+END_SRC
