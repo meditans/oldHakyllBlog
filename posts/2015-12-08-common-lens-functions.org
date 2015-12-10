@@ -1,0 +1,78 @@
+---
+title: Common lens functions
+---
+Here we have some of the functions that have to be absolutely known by any user of the library:
+
+#+BEGIN_SRC haskell
+(^.) :: s -> Getting a s a -> a
+#+END_SRC
+
+let's recall that a getting is:
+#+BEGIN_SRC haskell
+type Getting r s a = (a -> Const r a) -> s -> Const r s #+END_SRC
+#+END_SRC
+and represents, essentially, a function =s -> a=.
+
+So, =^.= is essentially a function application. Let's note that essentially
+every construct of the library can be used as a =Getting=.
+
+Now, for the corresponding one:
+#+BEGIN_SRC haskell
+(^..) :: s -> Getting (Endo [a]) s a -> [a]
+#+END_SRC
+
+This is interesting, if from an element of type =a= we can extract a function of
+type =[a] -> [a]=, then we get a function of type =[a] -> [a]= from s. So, let's
+find some =Getting (Endo [a]) s a= stuff.
+
+there is =each= for the types in the =Each= typeclass:
+#+BEGIN_SRC haskell
+each :: Traversal s t a b
+      = forall f. (Applicative f) => (a -> f b) -> (s -> f t)
+#+END_SRC
+
+This is the kind of reasoning behind the big diagram in the lens homepage.
+
+Another quite important function is:
+#+BEGIN_SRC haskell
+(^?) :: s -> Getting (First a) s a -> Maybe a
+#+END_SRC
+
+And this is essentially because =First a ~ Maybe a= (it's only a newtype).
+
+On the other side:
+#+BEGIN_SRC haskell
+(.~) :: ASetter s t a b -> b -> s -> t
+#+END_SRC
+
+The difference between =Setter=, =ASetter=, and =Setting= being:
+#+BEGIN_SRC haskell
+type ASetter s t a b = (a -> Identity b) -> s -> Identity t 
+type Setter  s t a b = forall f. Settable f => (a -> f b) -> s -> f t
+type Setting p s t a b = p a (Identity b) -> s -> Identity t 
+#+END_SRC
+
+The setting is meant to be polymorphic over the profunctor.
+
+Also, there is:
+#+BEGIN_SRC haskell
+(%~) :: ASetter s t a b -> (a -> b) -> s -> t
+#+END_SRC
+Nuff said.
+
+Also, when combining this functions, remember the priorities of the functions:
+| Function          | Priority |
+| =.=               |        9 |
+| =^.=, =^..=, =^?= |        8 |
+| =.~=              |        4 |
+| =&=               |        1 |
+| =$=               |        0 |
+
+So, the fact that =(.)= binds so tightly is the reason for which we can write things like:
+#+BEGIN_SRC haskell
+stuff ^. lens1 . lens2
+lens1 .~ newValue $ stuff
+#+END_SRC
+
+In the next few installments, we will have a more cautious look at what we can do with the various modules.
+But warning. There be examples :)

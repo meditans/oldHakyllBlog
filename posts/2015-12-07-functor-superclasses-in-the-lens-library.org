@@ -1,0 +1,63 @@
+---
+title: Functor superclasses in the lens library
+---
+
+There are a lot of different superclasses of =Functor=, in the lens library. In
+this post, we'll try to take a look at the motivation for many of them, and the
+connection with the remaining of the library.
+
+** Functor, Applicative, Apply
+Everyone know knows what a =Functor= and an =Applicative= means. The =Apply=
+class is easy, it's just an "Applicative" without =pure=, so it's an
+intermediate class between functor and applicative. It is defined in 
+the package [[https://hackage.haskell.org/package/semigroupoids-5.0.0.4/docs/Data-Functor-Apply.html#t:Apply][semigrupoids]].
+
+Now, for the first unusual functor, we have 
+** Settable
+Anything Settable must be isomorphic to the Identity Functor, says the documentation.
+
+
+#+BEGIN_SRC haskell
+class (Applicative f, Distributive f, Traversable f) => Settable f
+#+END_SRC
+
+And that's true, because this class is characterized by the function:
+#+BEGIN_SRC haskell
+untainted :: f a -> a
+#+END_SRC
+
+*** TODO Are the other functions worth mentioning?
+
+So you can, essentially, escape the functor. But that could also be the case for
+a non-empty list with =head=
+
+So, let's take a look at the other classes:
+#+BEGIN_SRC haskell
+class Functor g => Distributive g where
+  distribute  :: Functor f => f (g a) -> g (f a)
+  collect     :: Functor f => (a -> g b) -> f a -> g (f b)
+  distributeM :: Monad m   => m (g a) -> g (m a)
+  collectM    :: Monad m   => (a -> g b) -> m a -> g (m b)
+#+END_SRC
+
+Basically, this is the categorical dual of traverse. Note the repeating
+functions, to permit different implementations.
+
+*** TODO Add some intuition
+
+There are also a number of nice instances, like:
+#+BEGIN_SRC haskell
+Distributive ((->) e)
+Distributive g => Distributive (ReaderT e g)
+#+END_SRC
+
+I could do some examples. Maybe this guarantees some kind of post by itself.
+
+** How these types are related to the basic variations of lenses
+Essentially a =setter= is a:
+#+BEGIN_SRC haskell
+type Setter s t a b = (a -> Identity b) -> s -> Identity t
+#+END_SRC
+If we consider the isomorphism with the Identity functor strictly.
+
+Also note that =Setter s t a b= is a generalization for =fmap=.

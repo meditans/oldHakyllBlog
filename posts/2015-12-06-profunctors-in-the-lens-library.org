@@ -1,0 +1,84 @@
+---
+title: Profunctors in the lens library
+---
+
+** Explaining profunctors
+The case of functions and indexed profunctors are essentially explained in
+"Profunctor are so easy".
+
+*** Explanation of choice, and examples
+Now, =Choice=, which is behind the =Prism= definition:
+#+BEGIN_SRC haskell
+  class Profunctor p => Choice p where
+
+  -- The generalization of Costar of Functor that is strong with respect to
+  -- Either.
+
+  -- Note: This is also a notion of strength, except with regards to another
+  -- monoidal structure that we can choose to equip Hask with: the cocartesian
+  -- coproduct.
+
+  left'  :: p a b -> p (Either a c) (Either b c)
+  right' :: p a b -> p (Either c a) (Either c b)
+#+END_SRC
+
+Let's do some examples, the simple one is the instance:
+#+BEGIN_SRC haskell
+Choice (->)
+#+END_SRC
+this means that we have:
+
+#+BEGIN_SRC haskell
+  class Profunctor (->) => Choice (->) where
+
+  -- The generalization of Costar of Functor that is strong with respect to
+  -- Either.
+
+  -- Note: This is also a notion of strength, except with regards to another
+  -- monoidal structure that we can choose to equip Hask with: the cocartesian
+  -- coproduct.
+
+  left'  :: (a -> b) -> (Either a c -> Either b c)
+  right' :: (a -> b) -> (Either c a -> Either c b)
+#+END_SRC
+
+So, we're able to construct a function of Eithers when we have a normal
+function.
+
+Let's write the instance for the indexed stuff, too:
+#+BEGIN_SRC haskell
+  class Profunctor (Indexed i) => Choice (Indexed i) where
+
+  -- The generalization of Costar of Functor that is strong with respect to
+  -- Either.
+
+  -- Note: This is also a notion of strength, except with regards to another
+  -- monoidal structure that we can choose to equip Hask with: the cocartesian
+  -- coproduct.
+
+  left'  :: Indexed i a b -> Indexed i (Either a c) (Either b c)
+  right' :: Indexed i a b -> Indexed i (Either c a) (Either c b)
+#+END_SRC
+
+This too follows the rule of the profunctor, so we haven't much to imagine here.
+It's safe to say that a =Profunctor f= is =Choice= if we have a mean to lift it
+to the same profunctor between eithers.
+
+The best example of prism is, again, in the documentation of lens.
+#+BEGIN_SRC haskell
+nat :: Prism' Integer Natural
+nat = prism toInteger $ \ i ->
+   if i < 0
+   then Left i
+   else Right (fromInteger i)
+#+END_SRC
+
+in which we can assume:
+#+BEGIN_SRC haskell
+prism :: (Natural -> Integer) -> (Integer -> Either Integer Natural) -> Prism' Natural Integer
+Prism' Natural Integer
+  = Prism Natural Natural Integer Integer
+  = forall p f. (Choice p, Applicative f) => p Natural (f Natural) -> p Integer (f Integer)
+#+END_SRC
+
+One can spell out all the variations for the prism combinator, but we get the idea.

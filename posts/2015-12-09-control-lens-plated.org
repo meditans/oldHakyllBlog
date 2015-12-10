@@ -1,0 +1,53 @@
+---
+title: An introduction to Control.Lens.Plated
+---
+
+Today, we're taking a look at a very useful part of the lens library:
+=Control.Lens.Plated=, which generalizes and puts in context the "Scrap your
+Boilerplate" and "Uniplate" approaches for generic traversals of structures,
+putting it in a convenient lensified format.
+
+The primary class here is:
+#+BEGIN_SRC haskell
+class Plated a where
+  plate :: Traversal' a a 
+#+END_SRC
+
+Throughout the post, we will also use a tree from =Data.Tree=, for convenience
+#+BEGIN_SRC haskell
+  import Data.Tree
+
+  clamp :: Int -> Tree a -> Tree a
+  clamp 0 (Node n _)  = Node n []
+  clamp i (Node n lf) = Node n (map (clamp $ i-1) lf)
+
+  tree :: Tree Int
+  tree = clamp 2 $ unfoldTree (\n -> (n, [n*2,n*3])) 1
+#+END_SRC
+
+** The =transform= functions
+The =transform= family of combinators is straightforward to understand. Let's do
+the examples of a tree and an expression language.
+
+** The =rewrite= family
+The perfect example for this is the example of reducing an expression until a fixed point.
+
+** The =universe= combinator family
+Recursively retrieves all of the transitive descendants of a Plated container. Nuff said
+
+** The =cosmos= combinator family
+Cosmos returns a =Fold=, instead of a list. Let's recall that:
+#+BEGIN_SRC haskell
+type Fold s a = forall f. (Contravariant f, Applicative f)
+              => (a -> f a) -> s -> f s
+#+END_SRC
+
+So a fold is an extension of a traversal with both types equal (???)
+
+** Contexts and Holes
+I feel the perfect example for this is the theorem prover I'm developing.
+
+** Para, (...), Deep
+
+** Parts
+This is a lens from a plated thing to its immediate children.

@@ -1,0 +1,128 @@
+---
+title: A top-down lens tutorial
+---
+** Motivations
+It's been a long time I plan to write a lens tutorial.
+
+Lens is a treasure of functions that can really be a powerful tool in the hands
+of an aspiring haskeller.
+
+Most of the tutorial around focus on the motivation and the constructions of
+what the basic types in lens can do. That is an important step to understand
+things are.
+
+In this tutorial, however, we will follow another approach: we will start from
+the most general abstractions and work our way down to the concrete types.
+
+I will assume that you are familiar with the basic type of a lens, the
+motivations etc. If you feel unsure about that, please read the introductory
+post [[http://www.haskellforall.com/2013/05/program-imperatively-using-haskell.html][Program imperatively using Haskell lenses]], and Artyom's awesome series of
+posts [[http://artyom.me/lens-over-tea-1][Lenses over Tea]]. Also, you need to know what a profunctor is (read [[https://www.fpcomplete.com/user/liyang/profunctors][I love
+profunctors. They're so easy]]).
+
+** The overarching abstractions
+Without further ado, let's present the abstraction which sheds light over the library:
+
+#+BEGIN_SRC haskell
+type Optical p q f s t a b = p a (f b) -> q s (f t)
+#+END_SRC
+
+What does it mean? An =Optical= thing is something that transforms a profunctor
+from =a= to =f b= to a profunctor from =s= to =f t=.
+
+From here there are a few things we probably want to consider: the first is a
+type in which the profunctor is the same:
+#+BEGIN_SRC haskell
+type Optic p f s t a b = p a (f b) -> p s (f t)
+type Optic p f s t a b = Optical p p f s t a b
+#+END_SRC
+
+from here, we can have a lenslike construction, if we choose as a profunctor the
+most known profunctor: functions!
+
+#+BEGIN_SRC haskell
+type LensLike f s t a b = Optical (->) (->) f s t a b
+type LensLike f s t a b = Optic (->) f s t a b
+type LensLike f s t a b = (a -> f b) -> (s -> f t)
+#+END_SRC
+
+The other route we can choose is fixing only the first profunctor, in this way
+we can trasform a profunctor of our choosing in a function, to use later:
+
+#+BEGIN_SRC haskell
+type Over p f s t a b = Optical p (->) f s t a b
+type Over p f s t a b = p a (f b) -> (s -> f t)
+#+END_SRC
+
+if we pick an indexable profunctor we can define an indexedlenslike construction:
+#+BEGIN_SRC haskell
+type IndexedLensLike i f s t a b = forall p. Indexable i p => p a (f b) -> s -> f t 
+#+END_SRC
+
+** Let's talk about lens, fold, and traversals
+Now, let's focus for a bit on the LensLike construction, that is, let's choose
+the most common profunctors. From here we can get a variety of types, just by
+choosing different constraints for our functor =f=.
+#+BEGIN_SRC haskell
+type Lens       s t a b = forall f. Functor f     => (a -> f b) -> s -> f t 
+type Traversal  s t a b = forall f. Applicative f => (a -> f b) -> s -> f t
+type Traversal1 s t a b = forall f. Apply f       => (a -> f b) -> s -> f t
+type Setter     s t a b = forall f. Settable f    => (a -> f b) -> s -> f t
+#+END_SRC
+
+*** TODO Explain why these are useful, and mental models to think about them!
+
+*** If the type isn't varied
+Now, let's keep the same type, and we can define:
+#+BEGIN_SRC haskell
+type Getter s a = forall f. (Contravariant f, Functor f)     => (a -> f a) -> s -> f s
+type Fold   s a = forall f. (Contravariant f, Applicative f) => (a -> f a) -> s -> f s 
+type Fold1  s a = forall f. (Contravariant f, Apply f)       => (a -> f a) -> s -> f s
+#+END_SRC
+
+choosing a particular instance, we get (heh):
+#+BEGIN_SRC haskell
+type Getting r s a = (a -> Const r a) -> s -> Const r s
+#+END_SRC
+
+Note that every function can be a getter, and the connection is the Continuation passing style.
+Note also the read only property (we choose the functor).
+
+*** TODO Is there a convention about the -ing constructions?
+
+** Indexed and Indexed preserving stuff
+*** TODO Complete!
+This things are only here for completeness, they represent the indexed
+counterpart to the lens constructions we just examined.
+
+** And now, something completely different (?)
+
+An equality between two things happens if they have the same "profunctor" and the same "functor".
+#+BEGIN_SRC haskell
+type Equality s t a b = forall p f. p a (f b) -> p s (f t)
+#+END_SRC
+
+In =Iso= we also add the constraints
+#+BEGIN_SRC haskell
+type Iso s t a b = forall p f. (Profunctor p, Functor f) => p a (f b) -> p s (f t)
+#+END_SRC
+
+A prism is a restricted form of this idea, with more constraints (=p= is
+=Choice=, and =f= is =Applicative=)
+#+BEGIN_SRC haskell
+type Prism s t a b = forall p f. (Choice p, Applicative f) => p a (f b) -> p s (f t)
+#+END_SRC
+
+There are also =Review= and =AReview=, with their peculiar constraints choices.
+#+BEGIN_SRC haskell
+type Review t b = forall p f. (Choice p, Bifunctor p, Settable f) => Optic' p f t b
+type AReview t b = Optic' Tagged Identity t b 
+#+END_SRC
+
+** Conclusion
+Now we explored the essential part of the module [[https://hackage.haskell.org/package/lens-4.13/docs/Control-Lens-Type.html][Control.Lens.Type]] As an
+exercise, skim that module and make sure that you understand everything it's
+going on there.
+
+Next time we'll skim briefly on the types of the most common functions, to get
+an intuition for how we can use them. Till next time!

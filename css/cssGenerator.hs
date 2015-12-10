@@ -54,7 +54,7 @@ highlightSource = do
     -- backgroundColor base03
     -- border solid (px 3) base1
     backgroundImage (url "../images/denim.png")
-    padding (px 20) (px 20) (px 20) (px 20)
+    padding (px 10) (px 20) (px 10) (px 20)
     -- KeyWord
     color tufteBackground
     star # ".sourceCode" |> star # ".kw" ? color mYellow
@@ -138,7 +138,6 @@ tufteGeneralLayout = do
 
   star # ".danger" ? do
     color red
-
 
 tufteBackground = Other "#fffff8"
 
