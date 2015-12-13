@@ -13,6 +13,7 @@ main = putCss $ do
   highlightSource
   codeStyling
   headerStyling2
+  footerStyling
 
 -- Dark background colors
 base03  = rgb   0  43  54
@@ -87,6 +88,15 @@ tufte = do
   tufteGeneralLayout
   ul ? do
     listStyleType none
+  time ? do
+    fontSize (S.rem 0.8)
+    fontStyle italic
+  a ? do
+    textDecoration none
+    star # ":link" ? color darkred
+    star # ":visited" ? color darkred
+    star # ":hover" ? color darkred
+    star # ":active" ? color darkred
 
 tufteGeneralLayout :: Css
 tufteGeneralLayout = do
@@ -163,7 +173,7 @@ headerStyling = do
       display inline
       a ? do
         fontFamily ["AquilineTwo"] [cursive]
-        fontSize (S.rem 2)
+        fontSize (S.rem 17)
 
     div # "#navigation" ? do
       display inline
@@ -201,4 +211,9 @@ headerStyling2 = do
       display inline
       a ? do
         fontFamily ["AquilineTwo"] [cursive]
-        fontSize (S.rem 2)
+        fontSize (S.rem 1.5)
+
+footerStyling :: Css
+footerStyling = do
+  div # "#footer" ? do
+    fontSize (S.rem 0.8)

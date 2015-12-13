@@ -71,6 +71,37 @@ ul
   list-style-type : none;
 }
 
+time
+{
+  font-size  : 0.8rem;
+  font-style : italic;
+}
+
+a
+{
+  text-decoration : none;
+}
+
+a :link
+{
+  color : rgb(139,0,0);
+}
+
+a :visited
+{
+  color : rgb(139,0,0);
+}
+
+a :hover
+{
+  color : rgb(139,0,0);
+}
+
+a :active
+{
+  color : rgb(139,0,0);
+}
+
 pre
 {
   background-image : url("../images/denim.png");
@@ -147,7 +178,12 @@ div#header > div#logo
 div#header > div#logo a
 {
   font-family : "AquilineTwo", cursive;
-  font-size   : 2rem;
+  font-size   : 1.5rem;
+}
+
+div#footer
+{
+  font-size : 0.8rem;
 }
 
 
