@@ -29,11 +29,92 @@ Throughout the post, we will also use a tree from =Data.Tree=, for convenience
 The =transform= family of combinators is straightforward to understand. Let's do
 the examples of a tree and an expression language.
 
+Ok, let's begin with the most fundamental combinator:
+
+#+BEGIN_SRC haskell
+transformOf :: ASetter' a a -> (a -> a) -> a -> a
+transformOf l f = go where
+  go = f . over l go
+#+END_SRC
+Let's note that we don't need the plated instance here
+
+Let's remember that over just chooses identity as the functor:
+#+BEGIN_SRC haskell
+over :: ASetter s t a b -> (a -> b) -> s -> t
+#+END_SRC
+
+Now we can just define, if we have a plated instance, we can supply that to
+=transformOf=, getting:
+#+BEGIN_SRC haskell
+transform :: Plated a => (a -> a) -> a -> a
+transform = transformOf plate
+#+END_SRC
+
+Now let's have a look at this combinator:
+#+BEGIN_SRC haskell
+transformOn :: Plated a => ASetter s t a a -> (a -> a) -> s -> t
+transformOn b = over b . transform
+#+END_SRC
+
+Transform every element in the tree in a bottom-up manner over a region
+indicated by a Setter. Ok, here is this thing called `a region`. Could we have
+an example of this? Is it basically to embed the plated stuff in a bigger
+environment?
+
+#+BEGIN_SRC haskell
+transformOnOf :: ASetter s t a a -> ASetter' a a -> (a -> a) -> s -> t 
+#+END_SRC
+This obviously combines the two pattern we looked at before
+
 ** The =rewrite= family
 The perfect example for this is the example of reducing an expression until a fixed point.
 
+However, the rewrite function itself is:
+
+#+BEGIN_SRC haskell
+rewrite :: Plated a => (a -> Maybe a) -> a -> a
+rewrite = rewriteOf plate
+#+END_SRC
+
+so this means that the fundamental function of the family is again:
+#+BEGIN_SRC haskell
+rewriteOf :: ASetter' a a -> (a -> Maybe a) -> a -> a
+rewriteOf l f = go where
+  go = transformOf l (\x -> maybe x go (f x))
+#+END_SRC
+
+the functions =rewriteOn= and =rewriteOnOf= reserve no surprises, but there's a
+new variation here:
+
+#+BEGIN_SRC haskell
+rewriteMOf :: Monad m => LensLike' (WrappedMonad m) a a -> (a -> m (Maybe a)) -> a -> m a
+rewriteMOf l f = go where
+  go = transformMOf l (\x -> f x >>= maybe (return x) go)
+#+END_SRC
+
+which gives rise to:
+#+BEGIN_SRC haskell
+rewriteM :: (Monad m, Plated a) => (a -> m (Maybe a)) -> a -> m a
+rewriteM = rewriteMOf plate
+#+END_SRC
+
+and the usual family of combinators.
+
 ** The =universe= combinator family
-Recursively retrieves all of the transitive descendants of a Plated container. Nuff said
+Recursively retrieves all of the transitive descendants of a Plated container.
+These combinators return lists
+
+so basically we have:
+#+BEGIN_SRC haskell
+universe :: Plated a => a -> [a] 
+#+END_SRC
+
+and the usual suspects:
+#+BEGIN_SRC haskell
+universeOf :: Getting [a] a a -> a -> [a]
+universeOn :: Plated a => Getting [a] s a -> s -> [a]
+universeOnOf :: Getting [a] s a -> Getting [a] a a -> s -> [a] 
+#+END_SRC
 
 ** The =cosmos= combinator family
 Cosmos returns a =Fold=, instead of a list. Let's recall that:
@@ -42,12 +123,67 @@ type Fold s a = forall f. (Contravariant f, Applicative f)
               => (a -> f a) -> s -> f s
 #+END_SRC
 
-So a fold is an extension of a traversal with both types equal (???)
+So a fold is an extension of a traversal with both types equal (???) A fold is
+basically a way to return multiple values, in a way that can be composed with
+other lens-like constructions. So basically we are variating here on the list
+theme. We should do an example of why this thing should be more useful than just
+lists.
 
 ** Contexts and Holes
-I feel the perfect example for this is the theorem prover I'm developing.
+I feel the perfect example for this is the theorem prover I'm developing. Also,
+we should introduce here the notion of =Context= and =Pretext=, and maybe the
+store comonad.
+
+=Holes= is the one-level version of =contexts=.
 
 ** Para, (...), Deep
+Example usage for =para=, and =paraOf=:
+=para= is simply a paramorphism
+
+Example usage for =(...)=:
+Compose through a plate, it says.
+#+BEGIN_SRC haskell
+(...) :: (Applicative f, Plated c)
+      => LensLike f s t c c -> Over p f c c a b -> Over p f s t a b
+#+END_SRC
+
+Remember that:
+#+BEGIN_SRC haskell
+type LensLike f s t a b = (a -> f b) -> (s -> f t)
+type Over   p f s t a b = p a (f b)  -> (s -> f t)
+#+END_SRC
+
+so we're basically saying that:
+#+BEGIN_SRC haskell
+(...) :: (Applicative f, Plated c)
+      => ((c -> f c) -> (s -> f t))
+      -> (p a (f b) -> (c -> f c))
+      -> (p a (f b) -> (s -> f t))
+#+END_SRC
+
+Now, you may think that's basically the =(.)= operator, but here's the twist:
+#+BEGIN_SRC haskell
+l ... m = l . plate . m
+#+END_SRC
+So, we can do things like:
+
+Example usage for =deep=:
+#+BEGIN_SRC haskell
+deep :: (Conjoined p, Applicative f, Plated s) => Traversing p f s s a b -> Over p f s s a b 
+#+END_SRC
+
+Try to apply a traversal to all transitive descendants of a Plated container,
+but do not recurse through matching descendants. What is an use case for this?
 
 ** Parts
-This is a lens from a plated thing to its immediate children.
+This is a lens from a plated thing to its immediate children. This is ok, but
+still, do an example.
+
+#+BEGIN_SRC haskell
+parts :: Plated a => Lens' a [a]
+#+END_SRC
+
+** Conclusions
+We examined most of the combinators in =Control.Lens.Plated=. We miss the
+=GPlated= class which enables us to use this sort of machinery for a type with
+"Generic" instances.
