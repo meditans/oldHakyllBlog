@@ -1,0 +1,45 @@
+---
+title: An introduction to Control.Lens.Action
+---
+
+=Control.Lens.Action= is a package that was born in the =lens= ecosystem, and then splitted.
+Basically it lets us work with monadic getters and folds
+
+The basic abstraction of the library is 
+#+BEGIN_SRC haskell
+type Action m s a = forall f r. Effective m r f => (a -> f a) -> s -> f s
+#+END_SRC
+
+so, what does =Effective= mean?
+#+BEGIN_SRC haskell
+class (Monad m, Functor f, Contravariant f) => Effective m r f | f -> m r
+#+END_SRC
+
+An Effective Functor ignores its argument and is isomorphic to a Monad wrapped around a value.
+
+As usual we get the -ing variation:
+#+BEGIN_SRC haskell
+type Acting m r s a = LensLike (Effect m r) s s a a
+#+END_SRC
+
+So what's an =Effect=?
+#+BEGIN_SRC haskell
+newtype Effect m r a = Effect { getEffect :: m r }
+#+END_SRC
+
+Ok, now for the combinators: the primary one is =perform=, or, in the flipped version, =^!=
+#+BEGIN_SRC haskell
+perform :: Monad m => Acting m a s a -> s -> m a
+#+END_SRC
+
+so, how do we get such an =Acting=?
+#+BEGIN_SRC haskell
+act :: Monad m => (s -> m a) -> IndexPreservingAction m s a
+#+END_SRC
+
+because
+#+BEGIN_SRC haskell
+type IndexPreservingAction m s a = forall p f r. (Conjoined p, Effective m r f)
+                                 => p a (f a) -> p s (f s) 
+#+END_SRC
+So, we may as well get an =Acting=.
