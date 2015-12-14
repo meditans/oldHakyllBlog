@@ -1,0 +1,6 @@
+---
+title: The music example
+---
+
+Inspired by [[https://mail.haskell.org/pipermail/haskell-cafe/2015-December/122470.html][this post]] on the haskell mailing list.
+Consult the snippets for some working code.
