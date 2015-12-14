@@ -1,0 +1,5 @@
+---
+title: The skyline example
+---
+
+Talk about the solution to the skyline example.
