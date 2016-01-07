@@ -1,0 +1,9 @@
+---
+title: An exploration of the electron framework
+---
+
+So, first thing first. I downloaded the zip from https://github.com/atom/electron/releases
+
+it got extracted in the main folder :|
+
+So, ok, I got electron demo working

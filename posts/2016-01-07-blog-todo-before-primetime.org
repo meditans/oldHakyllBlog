@@ -1,0 +1,34 @@
+---
+title: Blog todo list, before primetime
+---
+
+** TODO Create a cabal/stack structure
+Which includes both the hakyll and the clay aspect, so that basically when the
+site is recompiled the css is also rewritten.
+
+** TODO Adjust the zoom issue
+I want a smooth zoom experience. I could take some ideas from Oliver Charles' blog.
+
+** TODO Create the structure for stub articles
+I want to be able to mark some articles as stub. They shouldn't be deployed to
+the site, but I should be able to see them offline.
+
+** TODO Infrastructure for math rendering
+I should be able to set up some latex rendering.
+
+** TODO Check the font deployment
+I should check that the fonts are correctly visualized in other computers.
+
+** TODO Mobile version deployment
+I should check the compatibility of this site for mobile devices.
+
+** TODO Finish the lens series of posts
+
+** TODO Finish the lens-action post
+
+** TODO Finish the post about the zeal tool
+I need this tool for generating zeal documentation from a stack directory.
+
+** TODO Remove old blogposts
+
+** TODO Clear the css situation
