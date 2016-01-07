@@ -9,12 +9,14 @@ Here we have some of the functions that have to be absolutely known by any user 
 
 let's recall that a getting is:
 #+BEGIN_SRC haskell
-type Getting r s a = (a -> Const r a) -> s -> Const r s #+END_SRC
+type Getting r s a = (a -> Const r a) -> s -> Const r s
 #+END_SRC
-and represents, essentially, a function =s -> a=.
+So, basically, a Getting is a think in which, if we know how to extract a =r=
+from an =a=, we can extract an =r= from an =s=, by first reaching inside the
+=a=, and then smuggling the =r= out with the =Const= functor.
 
-So, =^.= is essentially a function application. Let's note that essentially
-every construct of the library can be used as a =Getting=.
+So, =Getting a s a=, is something that can extract a =a= from an =s=, Let's note
+that essentially every construct of the library can be used as a =Getting=.
 
 Now, for the corresponding one:
 #+BEGIN_SRC haskell
@@ -52,7 +54,8 @@ type Setter  s t a b = forall f. Settable f => (a -> f b) -> s -> f t
 type Setting p s t a b = p a (Identity b) -> s -> Identity t 
 #+END_SRC
 
-The setting is meant to be polymorphic over the profunctor.
+The setting is meant to be polymorphic over the profunctor, the =ASetter= is the
+most monomorphic version, and the =Setter= is the polymorphic one.
 
 Also, there is:
 #+BEGIN_SRC haskell

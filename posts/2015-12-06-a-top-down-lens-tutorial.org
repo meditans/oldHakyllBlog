@@ -20,6 +20,13 @@ post [[http://www.haskellforall.com/2013/05/program-imperatively-using-haskell.h
 posts [[http://artyom.me/lens-over-tea-1][Lenses over Tea]]. Also, you need to know what a profunctor is (read [[https://www.fpcomplete.com/user/liyang/profunctors][I love
 profunctors. They're so easy]]).
 
+A note on why you should learn this type of abstractions when using lens. They
+come up in the error messages! So if you query for the type of =enum=, you'll
+get a signature with some constraints, and decipher what's the meaning between
+that function, constructing a useful mental model of what it does.
+
+So for every concept I'll try to give also a useful mental model.
+
 ** The overarching abstractions
 Without further ado, let's present the abstraction which sheds light over the library:
 
@@ -30,15 +37,19 @@ type Optical p q f s t a b = p a (f b) -> q s (f t)
 What does it mean? An =Optical= thing is something that transforms a profunctor
 from =a= to =f b= to a profunctor from =s= to =f t=.
 
+In a way or another, all the functions in lens can be arranged to fit this kind
+of pattern. So, for each type we're seeing, I'll give a couple of definitions
+with and without referencing more general abstractions.
+
 From here there are a few things we probably want to consider: the first is a
-type in which the profunctor is the same:
+type in which *the profunctor is the same*:
 #+BEGIN_SRC haskell
 type Optic p f s t a b = p a (f b) -> p s (f t)
 type Optic p f s t a b = Optical p p f s t a b
 #+END_SRC
 
-from here, we can have a lenslike construction, if we choose as a profunctor the
-most known profunctor: functions!
+from here, we can have a lenslike construction, if *we choose as a profunctor the
+most known profunctor: functions*!
 
 #+BEGIN_SRC haskell
 type LensLike f s t a b = Optical (->) (->) f s t a b
@@ -47,7 +58,9 @@ type LensLike f s t a b = (a -> f b) -> (s -> f t)
 #+END_SRC
 
 The other route we can choose is fixing only the first profunctor, in this way
-we can trasform a profunctor of our choosing in a function, to use later:
+we can trasform a profunctor of our choosing in a function, to use later: As the
+documentation says, "This is a convenient alias for use when you need to consume
+either indexed or non-indexed lens-likes based on context."
 
 #+BEGIN_SRC haskell
 type Over p f s t a b = Optical p (->) f s t a b
@@ -62,7 +75,7 @@ type IndexedLensLike i f s t a b = forall p. Indexable i p => p a (f b) -> s -> 
 ** Let's talk about lens, fold, and traversals
 Now, let's focus for a bit on the LensLike construction, that is, let's choose
 the most common profunctors. From here we can get a variety of types, just by
-choosing different constraints for our functor =f=.
+*choosing different constraints for our functor =f=*.
 #+BEGIN_SRC haskell
 type Lens       s t a b = forall f. Functor f     => (a -> f b) -> s -> f t 
 type Traversal  s t a b = forall f. Applicative f => (a -> f b) -> s -> f t
@@ -73,7 +86,7 @@ type Setter     s t a b = forall f. Settable f    => (a -> f b) -> s -> f t
 *** TODO Explain why these are useful, and mental models to think about them!
 
 *** If the type isn't varied
-Now, let's keep the same type, and we can define:
+Now, *let's keep the same type*, and we can define:
 #+BEGIN_SRC haskell
 type Getter s a = forall f. (Contravariant f, Functor f)     => (a -> f a) -> s -> f s
 type Fold   s a = forall f. (Contravariant f, Applicative f) => (a -> f a) -> s -> f s 
@@ -102,12 +115,12 @@ An equality between two things happens if they have the same "profunctor" and th
 type Equality s t a b = forall p f. p a (f b) -> p s (f t)
 #+END_SRC
 
-In =Iso= we also add the constraints
+In =Iso= we also *add the constraints*:
 #+BEGIN_SRC haskell
 type Iso s t a b = forall p f. (Profunctor p, Functor f) => p a (f b) -> p s (f t)
 #+END_SRC
 
-A prism is a restricted form of this idea, with more constraints (=p= is
+A prism is a restricted form of this idea, *with more constraints* (=p= is
 =Choice=, and =f= is =Applicative=)
 #+BEGIN_SRC haskell
 type Prism s t a b = forall p f. (Choice p, Applicative f) => p a (f b) -> p s (f t)
