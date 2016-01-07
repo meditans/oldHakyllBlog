@@ -23,8 +23,17 @@ I should check that the fonts are correctly visualized in other computers.
 I should check the compatibility of this site for mobile devices.
 
 ** TODO Finish the lens series of posts
+Let's detail here what that means:
+**** The [[file:2015-12-06-a-top-down-lens-tutorial.html][top-down lens tutorial]]
+**** The post on [[file:2015-12-09-control-lens-plated.html][Control.Lens.Plated]]
+**** The post on [[file:2015-12-08-common-lens-functions.html][common lens functions]]
+**** The post on [[file:2015-12-06-profunctors-in-the-lens-library.html][profunctors]]
+**** The post on [[file:2015-12-07-functor-superclasses-in-the-lens-library.html][functor superclasses]]
+**** The [[file:2015-12-06-a-lens-module-elencation.html][lens module elencation]] (this was an incomplete tutorial)
+**** [[file:2015-12-14-lens-ontology-music-example.html][These]] [[file:2015-12-14-lens-ontology-skyline-example.html][two]] posts on lenses ontology and usage
 
 ** TODO Finish the lens-action post
+**** The post is at [[file:2015-12-13-an-introduction-to-control-lens-action.html][post on Control.Lens.Action]]
 
 ** TODO Finish the post about the zeal tool
 I need this tool for generating zeal documentation from a stack directory.
