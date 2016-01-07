@@ -32,3 +32,9 @@ I need this tool for generating zeal documentation from a stack directory.
 ** TODO Remove old blogposts
 
 ** TODO Clear the css situation
+
+** TODO How do I link to internal =.org= files?
+Checking that links are ok?
+
+** TODO I should fix the code overflow
+When the code lines are too wide, they overflow from the little nice box.
