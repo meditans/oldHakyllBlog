@@ -1,5 +1,5 @@
 ---
-title: A simple lens tutorial. Tufte CSS
+title: A lens module elencation
 ---
 
 ** Contenuto dei moduli di Control.Lens
