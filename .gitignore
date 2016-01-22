@@ -6,3 +6,5 @@ _site/
 _cache/
 site
 /css/TAGS
+/TAGS
+/.stack-work/
