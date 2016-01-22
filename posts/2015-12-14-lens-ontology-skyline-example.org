@@ -2,4 +2,7 @@
 title: The skyline example
 ---
 
-Talk about the solution to the skyline example.
+Talk about the solution to the skyline example, which originally I found [[https://pykello.github.io/programming/2015/12/12/haskell-skyline/][here]].
+As in the original post, I'm concerned here only with the simplicity of the
+solution.
+
