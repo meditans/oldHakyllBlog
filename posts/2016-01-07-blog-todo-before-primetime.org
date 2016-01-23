@@ -2,10 +2,10 @@
 title: Blog todo list, before primetime
 ---
 
-** TODO Create a cabal/stack structure
-Which includes both the hakyll and the clay aspect, so that basically when the
-site is recompiled the css is also rewritten.
-
+** DONE Create a cabal/stack structure
+CLOSED: [2016-01-23 Sat 01:05]
+There are two executables in the cabal project now: `site`, which is the Hakyll
+program, and `css`, which generates the css with Clay.
 ** TODO Adjust the zoom issue
 I want a smooth zoom experience. I could take some ideas from Oliver Charles' blog.
 
@@ -16,9 +16,10 @@ the site, but I should be able to see them offline.
 ** TODO Infrastructure for math rendering
 I should be able to set up some latex rendering.
 
-** TODO Check the font deployment
-I should check that the fonts are correctly visualized in other computers.
-
+** DONE Check the font deployment
+CLOSED: [2016-01-23 Sat 01:07]
+Fonts are now correctly deployed. Maybe in the future I could think about making
+an image for the header, without sending the font.
 ** TODO Mobile version deployment
 I should check the compatibility of this site for mobile devices.
 
@@ -40,8 +41,9 @@ I need this tool for generating zeal documentation from a stack directory.
 
 ** TODO Remove old blogposts
 
-** TODO Clear the css situation
-
+** DONE Clear the css situation
+CLOSED: [2016-01-23 Sat 01:08]
+The css files are now automatically generated thanks to the `css` executable.
 ** TODO How do I link to internal =.org= files?
 Checking that links are ok?
 
