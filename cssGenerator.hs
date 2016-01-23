@@ -5,15 +5,18 @@ import Clay.Stylesheet (StyleM)
 import qualified Clay.Font as F
 import qualified Clay.Size as S
 
-import Prelude hiding (div)
+import Prelude hiding (div, writeFile)
+import Data.Text.Lazy.IO (writeFile)
 
 main :: IO ()
-main = putCss $ do
+main = writeFile "./css/default.css" . render $ do
   tufte
   highlightSource
   codeStyling
   headerStyling2
   footerStyling
+  aquilineTwo
+  etBembo
 
 -- Dark background colors
 base03  = rgb   0  43  54
@@ -171,7 +174,7 @@ headerStyling = do
       padding (S.rem 1) (S.rem 1) (S.rem 1) (S.rem 1)
       display inline
       a ? do
-        fontFamily ["AquilineTwo"] [cursive]
+        fontFamily ["aquilinetworegular"] [cursive]
         fontSize (S.rem 17)
 
     div # "#navigation" ? do
@@ -209,10 +212,32 @@ headerStyling2 = do
   div # "#header" |> div # "#logo" ? do
       display inline
       a ? do
-        fontFamily ["AquilineTwo"] [cursive]
+        fontFamily ["aquilinetworegular"] [cursive]
         fontSize (S.rem 1.5)
 
 footerStyling :: Css
 footerStyling = do
   div # "#footer" ? do
     fontSize (S.rem 0.8)
+
+--------------------------------------------------------------------------------
+aquilineTwo :: Css
+aquilineTwo = do
+  fontFace $ do
+    fontFamily ["aquilinetworegular"] []
+    fontFaceSrc [ FontFaceSrcUrl "../fonts/aquilinetwo-webfont.eot" Nothing
+                , FontFaceSrcUrl "../fonts/aquilinetwo-webfont.eot?#iefix" (Just EmbeddedOpenType)
+                , FontFaceSrcUrl "../fonts/aquilinetwo-webfont.woff" (Just WOFF)
+                , FontFaceSrcUrl "../fonts/aquilinetwo-webfont.ttf" (Just TrueType)
+                , FontFaceSrcUrl "../fonts/aquilinetwo-webfont.svg#aquilinetworegular" (Just SVG)
+                ]
+
+etBembo :: Css
+etBembo = do
+  fontFace $ do
+    fontFamily ["ETBembo"] []
+    fontFaceSrc [ FontFaceSrcUrl "../fonts/et-book-bold-line-figures.ttf" (Just TrueType)
+                , FontFaceSrcUrl "../fonts/et-book-display-italic-old-style-figure.ttf" (Just TrueType)
+                , FontFaceSrcUrl "../fonts/et-book-roman-line-figures.ttf" (Just TrueType)
+                , FontFaceSrcUrl "../fonts/et-book-roman-old-style-figure.ttf" (Just TrueType)
+                ]
