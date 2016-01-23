@@ -25,3 +25,4 @@ executable css
   ghc-options:         -threaded
   build-depends:       base == 4.*
                      , clay
+                     , text
