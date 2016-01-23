@@ -1,6 +1,0 @@
----
-title: Ciao!
-author: meditans
----
-
-Questo vorrebbe essere un nuovo post, che contiene tante belle cose
