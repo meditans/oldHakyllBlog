@@ -49,9 +49,9 @@ On the other side:
 
 The difference between =Setter=, =ASetter=, and =Setting= being:
 #+BEGIN_SRC haskell
-type ASetter s t a b = (a -> Identity b) -> s -> Identity t 
-type Setter  s t a b = forall f. Settable f => (a -> f b) -> s -> f t
-type Setting p s t a b = p a (Identity b) -> s -> Identity t 
+type ASetter   s t a b =                         (a -> Identity b) -> s -> Identity t 
+type Setter    s t a b = forall f. Settable f => (a -> f b)        -> s -> f t
+type Setting p s t a b =                         p a (Identity b)  -> s -> Identity t 
 #+END_SRC
 
 The setting is meant to be polymorphic over the profunctor, the =ASetter= is the
@@ -64,12 +64,12 @@ Also, there is:
 Nuff said.
 
 Also, when combining this functions, remember the priorities of the functions:
-| Function          | Priority |
-| =.=               |        9 |
-| =^.=, =^..=, =^?= |        8 |
-| =.~=              |        4 |
-| =&=               |        1 |
-| =$=               |        0 |
+| Function              | Priority |
+| =(.)=                 |        9 |
+| =(^.)= =(^..)= =(^?)= |        8 |
+| =(.~)=                |        4 |
+| =(&)=                 |        1 |
+| =($)=                 |        0 |
 
 So, the fact that =(.)= binds so tightly is the reason for which we can write things like:
 #+BEGIN_SRC haskell
