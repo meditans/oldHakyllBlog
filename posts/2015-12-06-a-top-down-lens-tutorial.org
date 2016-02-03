@@ -2,23 +2,32 @@
 title: A top-down lens tutorial
 ---
 ** Motivations
-It's been a long time I plan to write a lens tutorial.
+The joy of studying the lens library is twofold: on the practical side, lens is
+a treasure of functions that can be a powerful tool in the hands of a haskeller.
+On the other side, it's really a mind-bending library, and studying its working
+expands our minds with possibilities.
 
-Lens is a treasure of functions that can really be a powerful tool in the hands
-of an aspiring haskeller.
+That said, most of the tutorial around focus on the motivation and the
+constructions of what the basic types in lens can do. That is an important step
+to understand how things could be constructed from scratch, but not necessarly
+the best way to understand the library, once that it's here.
 
-Most of the tutorial around focus on the motivation and the constructions of
-what the basic types in lens can do. That is an important step to understand
-things are.
+So, in this tutorial, we will follow another approach; we'll start from the most
+general abstractions and work our way down to the concrete types and functions,
+trying to get both an intuition and ---
 
-In this tutorial, however, we will follow another approach: we will start from
-the most general abstractions and work our way down to the concrete types.
+I'll assume assume that you are familiar with the folklore regarding lens, that
+is, that with them you can (at least) mitigate the record problem and get
+getter/setter functionalies.
 
-I will assume that you are familiar with the basic type of a lens, the
-motivations etc. If you feel unsure about that, please read the introductory
-post [[http://www.haskellforall.com/2013/05/program-imperatively-using-haskell.html][Program imperatively using Haskell lenses]], and Artyom's awesome series of
-posts [[http://artyom.me/lens-over-tea-1][Lenses over Tea]]. Also, you need to know what a profunctor is (read [[https://www.fpcomplete.com/user/liyang/profunctors][I love
-profunctors. They're so easy]]).
+If you feel unsure about that, please read the introductory post [[http://www.haskellforall.com/2013/05/program-imperatively-using-haskell.html][Program
+imperatively using Haskell lenses]]
+
+If you want a spoiler-free version of the lens world, and want to work out the
+details, check Artyom's awesome series of posts [[http://artyom.me/lens-over-tea-1][Lenses over Tea]].
+
+Also, before starting, you need to know what a profunctor is. You can read [[https://www.fpcomplete.com/user/liyang/profunctors][I love
+profunctors. They're so easy]]. Go over and read it, I'll wait.
 
 A note on why you should learn this type of abstractions when using lens. They
 come up in the error messages! So if you query for the type of =enum=, you'll
@@ -27,7 +36,60 @@ that function, constructing a useful mental model of what it does.
 
 So for every concept I'll try to give also a useful mental model.
 
+The first thing you should know is profunctors. You can check this article, or
+this previous article of mine. The gist of it is that a profunctor is a
+bifunctor which is contravariant in the first argument and covariant in the
+second, just like function. If this description feels too terse, go check the
+article (there are pretty images).
+
+*** TODO Add a quick note on profunctors anyway
+So, profunctors. Profunctor generalize this specific behavior of functions:
+
+Let's see how we can change some of the types of the function =a->b=
+
+| Result Type | We need a |
+|-------------+-----------|
+| =a->c=      | =b->c=    |
+| =c->b=      | =c->a=    |
+
+So, this is to say that functions, seen as bifunctors, are covariant in a type
+and contravariant in the other. This is specifically the behavior we capture
+with profunctors:
+
+In fact here is a minimal definition:
+
+#+BEGIN_SRC haskell
+class Profunctor p where
+  lmap :: (a -> b) -> p b c -> p a c
+  rmap :: (b -> c) -> p a b -> p a c
+#+END_SRC
+
+(there is also a =dimap= method, which combines the two functions).
+
+So, why is this abstraction useful? Well, with this you can construct things
+which behave like functions, but can have some proprieties more:
+
+One of the most important examples is the =Indexed= type in =Control.Lens.Indexed=:
+#+BEGIN_SRC haskell
+newtype Indexed i a b = Indexed { runIndexed :: i -> a -> b }
+#+END_SRC
+
+So, this is a wrapper around the type =i -> a -> b=, so =Indexed i= is a
+bifunctor which has the right variance properties in =a= and =b= to be a
+profunctor.
+
+With this we gain the ability to speak of functions which also discriminate over
+an index.
+
+Why, do you ask, should we care about profunctors? They let us unify two
+
+Common types of profunctors. From =Data.Profunctor=, we notice =UpStar= and
+=DownStar=, to obtain profunctor from functors, =WrappedArrow=, because it turns
+out that arrows are profunctors, and, for the categorically inclined, the
+=Forget= profunctor.
+
 ** The overarching abstractions
+The main thing to understand about the =lens= library is that mostly all abstractions derive from a common one:
 Without further ado, let's present the abstraction which sheds light over the library:
 
 #+BEGIN_SRC haskell
@@ -72,6 +134,9 @@ if we pick an indexable profunctor we can define an indexedlenslike construction
 type IndexedLensLike i f s t a b = forall p. Indexable i p => p a (f b) -> s -> f t 
 #+END_SRC
 
+Note the usage of =forall p.=, which is granted by the =Rank2Types= extension.
+You can learn about RankNTypes [[https://ocharles.org.uk/blog/guest-posts/2014-12-18-rank-n-types.html][at Oliver Charles' blog]].
+
 ** Let's talk about lens, fold, and traversals
 Now, let's focus for a bit on the LensLike construction, that is, let's choose
 the most common profunctors. From here we can get a variety of types, just by
@@ -84,6 +149,15 @@ type Setter     s t a b = forall f. Settable f    => (a -> f b) -> s -> f t
 #+END_SRC
 
 *** TODO Explain why these are useful, and mental models to think about them!
+Mental models:
+- Lens :: this is an accessor to a field, in the data
+- Traversal :: this lets you do multiple accesses
+- Traversal1 :: this is like traversal, but accesses at least an element
+- Setter :: this lets you set things. The =Settable f= constraint is a fancy way
+     to say that your =f= is isomorphic to identity, so you could say that
+#+BEGIN_SRC haskell
+Setter s t a b  (a -> b) -> (s -> t)
+#+END_SRC
 
 *** If the type isn't varied
 Now, *let's keep the same type*, and we can define:
@@ -107,6 +181,35 @@ Note also the read only property (we choose the functor).
 *** TODO Complete!
 This things are only here for completeness, they represent the indexed
 counterpart to the lens constructions we just examined.
+
+Here there are the indexed version of IndexableLensLike.
+
+Recall that
+
+#+BEGIN_SRC haskell
+type IndexedLensLike i f s t a b = forall p. Indexable i p => p a (f b) -> s -> f t 
+#+END_SRC
+
+so we have:
+#+BEGIN_SRC haskell
+type IndexedLens       i s t a b = forall p f. (Indexable i p, Functor f)     => p a (f b) -> s -> f t 
+type IndexedTraversal  i s t a b = forall p f. (Indexable i p, Applicative f) => p a (f b) -> s -> f t 
+type IndexedTraversal1 i s t a b = forall p f. (Indexable i p, Apply f)       => p a (f b) -> s -> f t 
+type IndexedSetter     i s t a b = forall p f. (Indexable i p, Settable f)    => p a (f b) -> s -> f t 
+#+END_SRC
+
+And also of course we have the indexed version of the functions that let us retrieve something
+#+BEGIN_SRC haskell
+type IndexedGetter i s a = forall p f. (Indexable i p, Contravariant f, Functor f)     => p a (f a) -> s -> f s
+type IndexedFold   i s a = forall p f. (Indexable i p, Contravariant f, Applicative f) => p a (f a) -> s -> f s
+type IndexedFold1  i s a = forall p f. (Indexable i p, Contravariant f, Apply f)       => p a (f a) -> s -> f s 
+#+END_SRC
+
+Also, we have the IndexPreserving stuff, like:
+#+BEGIN_SRC haskell
+type IndexPreservingLens s t a b = forall p f. (Conjoined p, Functor f) => p a (f b) -> p s (f t) 
+#+END_SRC
+etc etc. Note that =Conjoined= is a further elaboration on =Choice=, which I'm not explaining in detail.
 
 ** And now, something completely different (?)
 
@@ -136,6 +239,9 @@ type AReview t b = Optic' Tagged Identity t b
 Now we explored the essential part of the module [[https://hackage.haskell.org/package/lens-4.13/docs/Control-Lens-Type.html][Control.Lens.Type]] As an
 exercise, skim that module and make sure that you understand everything it's
 going on there.
+
+Remember, the main point to take home is the fact that the brilliance of this
+library is understanding that all these types derive from a common abstraction:
 
 Next time we'll skim briefly on the types of the most common functions, to get
 an intuition for how we can use them. Till next time!
