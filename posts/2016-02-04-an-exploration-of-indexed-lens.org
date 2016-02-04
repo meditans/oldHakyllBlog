@@ -1,0 +1,38 @@
+---
+title: An exploration of Control.Lens.Indexed
+---
+
+** Indexed and Indexed preserving stuff
+*** TODO Complete!
+This things are only here for completeness, they represent the indexed
+counterpart to the lens constructions we just examined.
+
+Here there are the indexed version of src_haskell{IndexableLensLike}.
+
+Recall that:
+#+BEGIN_SRC haskell
+type IndexedLensLike i f s t a b = forall p. Indexable i p => p a (f b) -> s -> f t 
+#+END_SRC
+
+so we have:
+#+BEGIN_SRC haskell
+type IndexedLens       i s t a b = forall p f. (Indexable i p, Functor f)     => p a (f b) -> s -> f t 
+type IndexedTraversal  i s t a b = forall p f. (Indexable i p, Applicative f) => p a (f b) -> s -> f t 
+type IndexedTraversal1 i s t a b = forall p f. (Indexable i p, Apply f)       => p a (f b) -> s -> f t 
+type IndexedSetter     i s t a b = forall p f. (Indexable i p, Settable f)    => p a (f b) -> s -> f t 
+#+END_SRC
+
+And also of course we have the indexed version of the functions that let us
+retrieve something
+#+BEGIN_SRC haskell
+type IndexedGetter i s a = forall p f. (Indexable i p, Contravariant f, Functor f)     => p a (f a) -> s -> f s
+type IndexedFold   i s a = forall p f. (Indexable i p, Contravariant f, Applicative f) => p a (f a) -> s -> f s
+type IndexedFold1  i s a = forall p f. (Indexable i p, Contravariant f, Apply f)       => p a (f a) -> s -> f s 
+#+END_SRC
+
+Also, we have the IndexPreserving stuff, like:
+#+BEGIN_SRC haskell
+type IndexPreservingLens s t a b = forall p f. (Conjoined p, Functor f) => p a (f b) -> p s (f t) 
+#+END_SRC
+etc etc. Note that src_haskell{Conjoined} is a further elaboration on
+src_haskell{Choice}, which I'm not explaining in detail.
