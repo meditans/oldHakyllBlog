@@ -87,7 +87,8 @@ customPandocCompiler = pandocCompilerWithTransform
       { writerExtensions     = S.insert Ext_tex_math_dollars (writerExtensions def)
       , writerHTMLMathMethod = MathJax "http://cdn.mathjax.org/mathjax/latest/MathJax.js"
       , writerHtml5          = True
-      , writerSectionDivs    = True }
+      , writerSectionDivs    = True
+      , writerHighlight      = True }
 
 -- | Questa funzione va a mettere tutto quello che va da un header di livello
 --   massimo, che in questo contesto e' il secondo, al successivo, in una
