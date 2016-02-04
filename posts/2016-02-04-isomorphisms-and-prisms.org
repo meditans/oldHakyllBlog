@@ -1,0 +1,27 @@
+---
+title: Isomorphisms and Prisms
+author: Carlo Nucera
+---
+#+STARTUP: fninline
+** Isomorphisms and Prisms
+An equality between two things happens if they have the same "profunctor" and the same "functor".
+#+BEGIN_SRC haskell
+type Equality s t a b = forall p f. p a (f b) → p s (f t)
+#+END_SRC
+
+In src_haskell{Iso} we also *add the constraints*:
+#+BEGIN_SRC haskell
+type Iso s t a b = forall p f. (Profunctor p, Functor f) => p a (f b) → p s (f t)
+#+END_SRC
+
+A prism is a restricted form of this idea, *with more constraints* (src_haskell{p} is
+src_haskell{Choice}, and src_haskell{f} is src_haskell{Applicative})
+#+BEGIN_SRC haskell
+type Prism s t a b = forall p f. (Choice p, Applicative f) => p a (f b) → p s (f t)
+#+END_SRC
+
+There are also src_haskell{Review} and src_haskell{AReview}, with their peculiar constraints choices.
+#+BEGIN_SRC haskell
+type Review t b  = forall p f. (Choice p, Bifunctor p, Settable f) => Optic' p f t b
+type AReview t b = Optic' Tagged Identity t b 
+#+END_SRC
