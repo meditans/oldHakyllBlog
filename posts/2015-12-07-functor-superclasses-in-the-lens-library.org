@@ -2,21 +2,20 @@
 title: Functor superclasses in the lens library
 ---
 
-There are a lot of different superclasses of =Functor=, in the lens library. In
-this post, we'll try to take a look at the motivation for many of them, and the
-connection with the remaining of the library.
+There are a lot of different superclasses of src_haskell{Functor}, in the lens
+library. In this post, we'll try to take a look at the motivation for many of
+them, and the connection with the remaining of the library.
 
 ** Functor, Applicative, Apply
-Everyone know knows what a =Functor= and an =Applicative= means. The =Apply=
-class is easy, it's just an "Applicative" without =pure=, so it's an
-intermediate class between functor and applicative. It is defined in 
-the package [[https://hackage.haskell.org/package/semigroupoids-5.0.0.4/docs/Data-Functor-Apply.html#t:Apply][semigrupoids]].
+Everyone know knows what a src_haskell{Functor} and an src_haskell{Applicative}
+means. The src_haskell{Apply} class is easy, it's just an "Applicative" without
+src_haskell{pure}, so it's an intermediate class between functor and
+applicative. It is defined in the package [[https://hackage.haskell.org/package/semigroupoids-5.0.0.4/docs/Data-Functor-Apply.html#t:Apply][semigrupoids]].
 
-Now, for the first unusual functor, we have 
+Now, for the first unusual functor, we have:
 ** Settable
-Anything Settable must be isomorphic to the Identity Functor, says the documentation.
-
-
+Anything Settable must be isomorphic to the Identity Functor, says the
+documentation. Then why not just use the Identity Functor?
 #+BEGIN_SRC haskell
 class (Applicative f, Distributive f, Traversable f) => Settable f
 #+END_SRC
@@ -29,7 +28,7 @@ untainted :: f a -> a
 *** TODO Are the other functions worth mentioning?
 
 So you can, essentially, escape the functor. But that could also be the case for
-a non-empty list with =head=
+a non-empty list with src_haskell{head}
 
 So, let's take a look at the other classes:
 #+BEGIN_SRC haskell
@@ -54,10 +53,11 @@ Distributive g => Distributive (ReaderT e g)
 I could do some examples. Maybe this guarantees some kind of post by itself.
 
 ** How these types are related to the basic variations of lenses
-Essentially a =setter= is a:
+Essentially a src_haskell{setter} is a:
 #+BEGIN_SRC haskell
 type Setter s t a b = (a -> Identity b) -> s -> Identity t
 #+END_SRC
 If we consider the isomorphism with the Identity functor strictly.
 
-Also note that =Setter s t a b= is a generalization for =fmap=.
+Also note that src_haskell{Setter s t a b} is a generalization for
+src_haskell{fmap}.

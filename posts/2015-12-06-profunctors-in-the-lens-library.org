@@ -1,13 +1,13 @@
 ---
-title: Profunctors in the lens library
+title: Profunctors in lens
 ---
 
 ** Explaining profunctors
 The case of functions and indexed profunctors are essentially explained in
 "Profunctor are so easy".
 
-*** Explanation of choice, and examples
-Now, =Choice=, which is behind the =Prism= definition:
+*** Explanation of CHOICE, and examples
+Now, src_haskell{Choice}, which is behind the src_haskell{Prism} definition:
 #+BEGIN_SRC haskell
   class Profunctor p => Choice p where
 
@@ -61,8 +61,8 @@ Let's write the instance for the indexed stuff, too:
 #+END_SRC
 
 This too follows the rule of the profunctor, so we haven't much to imagine here.
-It's safe to say that a =Profunctor f= is =Choice= if we have a mean to lift it
-to the same profunctor between eithers.
+It's safe to say that a src_haskell{Profunctor f} is src_haskell{Choice} if we
+have a mean to lift it to the same profunctor between eithers.
 
 The best example of prism is, again, in the documentation of lens.
 #+BEGIN_SRC haskell
@@ -81,4 +81,5 @@ Prism' Natural Integer
   = forall p f. (Choice p, Applicative f) => p Natural (f Natural) -> p Integer (f Integer)
 #+END_SRC
 
-One can spell out all the variations for the prism combinator, but we get the idea.
+One can spell out all the variations for the prism combinator, but we get the
+idea.
