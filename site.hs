@@ -7,7 +7,7 @@ import           Hakyll
 
 import           Data.List.Split        (keepDelimsL, split, whenElt)
 import qualified Data.Set               as S
-import           Text.Pandoc.Definition (Block (..), Pandoc (..))
+import           Text.Pandoc.Definition (Block (..), Pandoc (..), Inline (..))
 import           Text.Pandoc.Options    (Extension (..), HTMLMathMethod (..),
                                          WriterOptions (..), def)
 import           Text.Pandoc.Walk       (walk)
@@ -81,7 +81,7 @@ customPandocCompiler :: Compiler (Item String)
 customPandocCompiler = pandocCompilerWithTransform
                          defaultHakyllReaderOptions
                          writerOptions
-                         (markCode . sectionify)
+                         (markCode . sectionify . spanifyMarginNote)
   where
     writerOptions = def
       { writerExtensions     = S.insert Ext_tex_math_dollars (writerExtensions def)
@@ -108,3 +108,9 @@ markCode = walk markCode'
       | "haskell" `elem` cs  =  CodeBlock (i, "code":cs, kvs) s
       | otherwise               =  cb
     markCode' x = x
+
+spanifyMarginNote :: Pandoc -> Pandoc
+spanifyMarginNote = walk spanify
+  where
+    spanify (Note [Para is]) = Span ("", ["marginnote"], []) is
+    spanify x = x
