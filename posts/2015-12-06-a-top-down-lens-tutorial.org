@@ -1,33 +1,18 @@
 ---
 title: A top-down lens tutorial
+author: Carlo Nucera
 ---
-** Motivations
-The joy of studying the lens library is twofold: on the practical side, lens is
-a treasure of functions that can be a powerful tool in the hands of a haskeller.
-On the other side, it's really a mind-bending library, and studying its working
-expands our minds with possibilities.
+#+STARTUP: fninline
 
-Most of the tutorial around focus on the motivation and the construction of the
-basic lens types. That's an important step to understand how things could be
-constructed from scratch, but not necessarily the quickest way to understand the
-library.
+Most [fn:1] tutorials on the src_haskell{lens} library focus on the construction
+of the basic lens types, starting from scratch and motivating the derivation.
+That's an important step to understand how things could be constructed from
+scratch, but not necessarily the quickest way to understand the library.
 
-In this tutorial, we will follow another approach; we'll start from the most
+In this tutorial, we will follow another approach: we'll start from the most
 general abstractions and work our way down to the more concrete types and
-functions, trying to get both an intuition and ---
-
-In what follows, I'll assume assume that you are familiar with the folklore
-regarding lens, that is, that with them you can (at least) mitigate the record
-problem and get getter/setter functionalies.
-
-If you feel unsure about that, please read Gabriel's introductory post [[http://www.haskellforall.com/2013/05/program-imperatively-using-haskell.html][Program
-imperatively using Haskell lenses]]
-
-If you want a spoiler-free version of the lens world, and want to work out the
-details, check Artyom's awesome series of posts [[http://artyom.me/lens-over-tea-1][Lenses over Tea]].
-
-Also, before starting, you need to know what a profunctor is. You can read [[https://www.fpcomplete.com/user/liyang/profunctors][I love
-profunctors. They're so easy]]. Go over and read it, I'll wait.
+functions, and we'll try to get an intuition of the possibilities of the
+library.
 
 A note on why you should learn this type of abstractions when using lens. They
 come up in the error messages! So if you query for the type of
@@ -37,123 +22,141 @@ what it does.
 
 So for every concept I'll try to give also a useful mental model.
 
-The first thing you should know is profunctors. You can check this article, or
-this previous article of mine. The gist of it is that a profunctor is a
-bifunctor which is contravariant in the first argument and covariant in the
-second, just like function. If this description feels too terse, go check the
-article (there are pretty images).
+[fn:1]In what follows, I'll assume you are at least familiar with the basic purpose of
+the lens library, that is, mitigate the record problem and get getter/setter
+functionalies (of course, the lens library is much more than that).
+If you don't, and want to get a sense of the possibilities, read Gabriel's
+introductory post [[http://www.haskellforall.com/2013/05/program-imperatively-using-haskell.html][Program imperatively using Haskell lenses]].
+On the other hand, if you want to understand and construct the abstractions the
+lens world from scratch, check Artyom's series of posts [[http://artyom.me/lens-over-tea-1][Lenses over Tea]].
 
-So, profunctors. Profunctor generalize this specific behavior of functions:
+** Profunctors
+Before [fn:2] starting talking about lenses, we should introduce the concept of
+src_haskell{Profunctor}. src_haskell{Profunctors} generalize this specific
+behavior of functions:
 
-Let's see how we can change some of the types of the function src_haskell{a->b}
-
-| Result Type         | We need a           |
-|---------------------+---------------------|
-| src_haskell{a -> c} | src_haskell{b -> c} |
-| src_haskell{c -> b} | src_haskell{c -> a} |
+Let's see how we can change some of the types of the function src_haskell{a→b}
+| Result Type        | We need a          |
+|--------------------+--------------------|
+| src_haskell{a → c} | src_haskell{b → c} |
+| src_haskell{c → b} | src_haskell{c → a} |
 
 So, this is to say that functions, seen as bifunctors, are covariant in a type
 and contravariant in the other. This is specifically the behavior we capture
 with profunctors:
 
-In fact here is a minimal definition:
-
+In fact here is a minimal definition for the class:
 #+BEGIN_SRC haskell
 class Profunctor p where
-  lmap :: (a -> b) -> p b c -> p a c
-  rmap :: (b -> c) -> p a b -> p a c
+  lmap :: (a → b) → p b c → p a c
+  rmap :: (b → c) → p a b → p a c
 #+END_SRC
 
-(there is also a src_haskell{dimap} method, which combines the two functions).
-
-So, why is this abstraction useful? Well, with this you can construct things
-which behave like functions, but can have some proprieties more:
-
-One of the most important examples is the src_haskell{Indexed} type in src_haskell{Control.Lens.Indexed}:
+This abstraction is useful because now you can construct things which behave like
+functions, but may have some more proprieties: probably the most important
+examples is the src_haskell{Indexed} type in
+src_haskell{Control.Lens.Indexed}: [fn:3]
 #+BEGIN_SRC haskell
-newtype Indexed i a b = Indexed { runIndexed :: i -> a -> b }
+newtype Indexed i a b = Indexed { runIndexed :: i → a → b } 
 #+END_SRC
 
-So, this is a wrapper around the type src_haskell{i -> a -> b}, so src_haskell{Indexed i} is a
-bifunctor which has the right variance properties in src_haskell{a} and src_haskell{b} to be a
-profunctor.
+With this we gain the ability to speak of functions which also
+discriminate over an index, a coordinate in a data structure. This in turn let
+us manipulate under a single abstraction functions which do similar things,
+like:
+#+BEGIN_SRC haskell
+Map.map        ::     (a → b) → Map i a → Map i b
+Map.mapWithKey :: (i → a → b) → Map i a → Map i b
+#+END_SRC
 
-With this we gain the ability to speak of functions which also discriminate over
-an index.
+which could generically become:
+#+BEGIN_SRC haskell
+promap :: (Profunctor p) => p a b -> Map i a -> Map i b
+#+END_SRC
+As always, by astracting a common pattern we gain more expressive language in
+which we can solve problems. We'll reap the fruits of this generalization when
+we'll talk about the functions of the indexed part of the src_haskell{lens}
+library, in another post.
 
-Why, do you ask, should we care about profunctors? They let us unify two
+[fn:2] I suggest to go and read [[https://www.schoolofhaskell.com/user/liyang/profunctors][I love profunctors. They're so easy]], from which
+I took the map example below. Feel free to skip it (and this section) if the
+definition of a profunctor as a bifunctor which is contravariant in the first
+argument and covariant in the second is perfectly clear.
 
-Common types of profunctors. From src_haskell{Data.Profunctor}, we notice src_haskell{UpStar} and
-src_haskell{DownStar}, to obtain profunctor from functors, src_haskell{WrappedArrow}, because it turns
-out that arrows are profunctors, and, for the categorically inclined, the
-src_haskell{Forget} profunctor.
+[fn:3] As a simple exercise, try to write the src_haskell{Profunctor} instance
+for this type. You can check the result [[http://hackage.haskell.org/package/lens-4.13.1/docs/src/Control-Lens-Internal-Indexed.html#line-154][here]]. For other examples of profunctors
+you may check the [[http://hackage.haskell.org/package/profunctors-3.3.0.1/docs/Data-Profunctor.html#t:UpStar][src_haskell{UpStar}]] and [[http://hackage.haskell.org/package/profunctors-3.3.0.1/docs/Data-Profunctor.html#t:DownStar][src_haskell{DownStar}]] constructions,
+to obtain profunctors from functors, [[http://hackage.haskell.org/package/profunctors-3.3.0.1/docs/Data-Profunctor.html#t:WrappedArrow][src_haskell{WrappedArrow}]], because arrows
+are profunctors, and, for the categorically inclined, the [[http://hackage.haskell.org/package/profunctors-3.3.0.1/docs/Data-Profunctor.html#t:Forget][src_haskell{Forget}]]
+construction. But it turns out that the concept is quite pervasive, because it
+models the "function which may depend from other things" pattern.
 
 ** The overarching abstractions
-The main thing to understand about the src_haskell{lens} library is that mostly
-all abstractions derive from a common one:
+Let's talk about the src_haskell{lens} library, now. The main thing to
+understand about it is that mostly all abstractions derive from a common one:
 
 #+BEGIN_SRC haskell
-type Optical p q f s t a b = p a (f b) -> q s (f t)
+type Optical p q f s t a b = p a (f b) → q s (f t)
 #+END_SRC
 
-What does it mean? An src_haskell{Optical} transforms a profunctor from
-src_haskell{a} to src_haskell{f b} to a profunctor from src_haskell{s} to
-src_haskell{f t}. One way or another, most of the functions in lens can be
-arranged to fit this kind of pattern. What will change is the different choices
-and constraints we'll make for profunctors, functors, and types.
+So, an src_haskell{Optical} transforms a src_haskell{p a (f b)} to a
+src_haskell{q s (f t)}. One way or another, most of the functions in lens can be
+arranged to fit this kind of pattern, which comes to be the common abstraction
+on which the wealth of functionality is built. What will change is the different
+choices we'll make and constraints we'll impose on the types involved, most
+notably src_haskell{p} and src_haskell{f}, which, as you can guess, will become,
+respectively, a src_haskell{Profunctor} and a src_haskell{Functor}.
 
 So, for each type we're seeing, I'll give a couple of definitions with and
 without referencing more general abstractions.
 
-We might, for example, *use the same profunctor*:
+We might, for example, unify src_haskell{p} and src_haskell{q}, getting an
+src_haskell{Optic}:
 #+BEGIN_SRC haskell
-type Optic p f s t a b = p a (f b) -> p s (f t)
+type Optic p f s t a b = p a (f b) → p s (f t)
 type Optic p f s t a b = Optical p p f s t a b
 #+END_SRC
 
-and constructing src_haskell{LensLike}, if we choose as a profunctor *the
-simplest one:* src_haskell{(->)}!
+or set both src_haskell{p} and src_haskell{q} to src_haskell{(→)}, getting a
+src_haskell{LensLike}:
 #+BEGIN_SRC haskell
-type LensLike f s t a b = (a -> f b) -> (s -> f t)
-type LensLike f s t a b = Optical (->) (->) f s t a b
+type LensLike f s t a b = (a → f b) → (s → f t)
+type LensLike f s t a b = Optical (→) (→) f s t a b
 #+END_SRC
 
-Or, starting with an src_haskell{Optical}, we might mantain polymorphic only the
-first profunctor; in this way we can trasform it in a function, to use later: As
-the documentation says, "This is a convenient alias for use when you need to
-consume either indexed or non-indexed lens-likes based on context."
-
+Or, fixing only src_haskell{q} to src_haskell{(→)}, getting an
+src_haskell{Over}, which, as the documentation says, this is a convenient alias
+to use when you need to consume either indexed or non-indexed lens-likes based
+on context:
 #+BEGIN_SRC haskell
-type Over p f s t a b = Optical p (->) f s t a b
-type Over p f s t a b = p a (f b) -> (s -> f t)
+type Over p f s t a b = Optical p (→) f s t a b
+type Over p f s t a b = p a (f b) → (s → f t)
 #+END_SRC
 
-if we pick an indexable profunctor we can define an indexedlenslike construction:
-#+BEGIN_SRC haskell
-type IndexedLensLike i f s t a b = forall p. Indexable i p => p a (f b) -> s -> f t 
-#+END_SRC
+[fn:4] As the documentation says, this is a convenient alias to use when you
+need to consume either indexed or non-indexed lens-likes based on context.
 
-Note the usage of src_haskell{forall p.}, which is granted by the src_haskell{Rank2Types} extension.
-You can learn about RankNTypes [[https://ocharles.org.uk/blog/guest-posts/2014-12-18-rank-n-types.html][at Oliver Charles' blog]].
-
-** Lenses, folds, and traversals
+** Lenses and traversals
 Now, let's focus on the src_haskell{LensLike} construction, and specialize it to
-the most known types of the lens ecosystem, just by *choosing different
-constraints for our functor src_haskell{f}*.
+the most known types of the lens ecosystem, just by choosing different
+constraints for our src_haskell{f}.
 #+BEGIN_SRC haskell
-type Lens       s t a b = forall f. Functor f     => (a -> f b) -> s -> f t 
-type Traversal  s t a b = forall f. Applicative f => (a -> f b) -> s -> f t
-type Traversal1 s t a b = forall f. Apply f       => (a -> f b) -> s -> f t
-type Setter     s t a b = forall f. Settable f    => (a -> f b) -> s -> f t
+type Lens       s t a b = forall f. Functor f     => (a → f b) → s → f t 
+type Traversal  s t a b = forall f. Applicative f => (a → f b) → s → f t
+type Traversal1 s t a b = forall f. Apply f       => (a → f b) → s → f t
+type Setter     s t a b = forall f. Settable f    => (a → f b) → s → f t
 #+END_SRC
 
-It's useful to consider some mental model the functor instance is the most basic
-one, and it gives rise to the src_haskell{Lens}; as a mental model, we should
-think at something that can be used to read and set a particular location in a
-data structure.
+It's useful to consider some mental model for these objects: the functor
+instance is the most simple one, and it gives rise to the src_haskell{Lens}; as
+a mental model, we should think at src_haskell{Lens s t a b} as something that
+can be used to read an src_haskell{a} value from a src_haskell{s}, and set a
+particular location in a data structure (a "purely functional reference", as the
+documentation says).
 
 If we add the Applicative constraint, we are now able to edit more location,
-with src_haskell{Traversal}.
+with src_haskell{Traversal}. It allows you to traverse over a structure and
+change out its contents with monadic or Applicative side-effects
 
 If we just take the src_haskell{<*>} operator from src_haskell{Applicative}, but
 not src_haskell{pure} (that's what the src_haskell{Apply} class does), we keep
@@ -165,50 +168,26 @@ The src_haskell{Setter}, on the other hand, let you set things. The
 src_haskell{Settable f} constraint is a fancy way to say that your
 src_haskell{f} is isomorphic to identity, so you could say that
 #+BEGIN_SRC haskell
-Setter s t a b  (a -> b) -> (s -> t)
+Setter s t a b = (a → b) → (s → t)
 #+END_SRC
 
 *** TODO If the type isn't varied
 Now, if we pose $a = b$ and $s = t$, we can define:
 #+BEGIN_SRC haskell
-type Getter s a = forall f. (Contravariant f, Functor f)     => (a -> f a) -> s -> f s
-type Fold   s a = forall f. (Contravariant f, Applicative f) => (a -> f a) -> s -> f s 
-type Fold1  s a = forall f. (Contravariant f, Apply f)       => (a -> f a) -> s -> f s
+type Getter s a = forall f. (Contravariant f, Functor f)     => (a → f a) → s → f s
+type Fold   s a = forall f. (Contravariant f, Applicative f) => (a → f a) → s → f s 
+type Fold1  s a = forall f. (Contravariant f, Apply f)       => (a → f a) → s → f s
 #+END_SRC
 
 TODO: Explain why one wants the Contravariant constraint.
 
 choosing a particular instance, we get (heh):
 #+BEGIN_SRC haskell
-type Getting r s a = (a -> Const r a) -> s -> Const r s
+type Getting r s a = (a → Const r a) → s → Const r s
 #+END_SRC
 
 Note that every function can be a getter, and the connection is the Continuation passing style.
 Note also the read only property (we choose the functor).
-
-** Isomorphisms and Prisms
-
-An equality between two things happens if they have the same "profunctor" and the same "functor".
-#+BEGIN_SRC haskell
-type Equality s t a b = forall p f. p a (f b) -> p s (f t)
-#+END_SRC
-
-In src_haskell{Iso} we also *add the constraints*:
-#+BEGIN_SRC haskell
-type Iso s t a b = forall p f. (Profunctor p, Functor f) => p a (f b) -> p s (f t)
-#+END_SRC
-
-A prism is a restricted form of this idea, *with more constraints* (src_haskell{p} is
-src_haskell{Choice}, and src_haskell{f} is src_haskell{Applicative})
-#+BEGIN_SRC haskell
-type Prism s t a b = forall p f. (Choice p, Applicative f) => p a (f b) -> p s (f t)
-#+END_SRC
-
-There are also src_haskell{Review} and src_haskell{AReview}, with their peculiar constraints choices.
-#+BEGIN_SRC haskell
-type Review t b  = forall p f. (Choice p, Bifunctor p, Settable f) => Optic' p f t b
-type AReview t b = Optic' Tagged Identity t b 
-#+END_SRC
 
 ** Conclusion
 Now we explored the essential part of the module [[https://hackage.haskell.org/package/lens-4.13/docs/Control-Lens-Type.html][Control.Lens.Type]]. As an
