@@ -7,14 +7,20 @@ import           Hakyll
 
 import           Data.List.Split        (keepDelimsL, split, whenElt)
 import qualified Data.Set               as S
-import           Text.Pandoc.Definition (Block (..), Pandoc (..), Inline (..))
+import           System.Environment     (getArgs)
+import           Text.Pandoc.Definition (Block (..), Inline (..), Pandoc (..))
 import           Text.Pandoc.Options    (Extension (..), HTMLMathMethod (..),
                                          WriterOptions (..), def)
 import           Text.Pandoc.Walk       (walk)
 
 --------------------------------------------------------------------------------
 main :: IO ()
-main = hakyll $ do
+main = do
+  (action:_) <- getArgs
+  let postsPattern = if action == "watch"
+                     then "posts/*" .||. "drafts/*"
+                     else "posts/*"
+  hakyll $ do
     match "images/*" $ do
         route   idRoute
         compile copyFileCompiler
@@ -33,7 +39,7 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
 
-    match "posts/*" $ do
+    match postsPattern $ do
         route $ setExtension "html"
         compile $ customPandocCompiler
             >>= loadAndApplyTemplate "templates/post.html"    postCtx
@@ -43,7 +49,7 @@ main = hakyll $ do
     create ["archive.html"] $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
+            posts <- recentFirst =<< loadAll postsPattern
             let archiveCtx =
                     listField "posts" postCtx (return posts) `mappend`
                     constField "title" "Archives"            `mappend` defaultContext
@@ -57,7 +63,7 @@ main = hakyll $ do
     match "index.html" $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
+            posts <- recentFirst =<< loadAll postsPattern
             let indexCtx =
                     listField "posts" postCtx (return posts) `mappend`
                     constField "title" "Home"                `mappend`
