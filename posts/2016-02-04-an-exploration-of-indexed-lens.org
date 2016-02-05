@@ -3,6 +3,16 @@ title: An exploration of Control.Lens.Indexed
 ---
 
 ** Indexed and Indexed preserving stuff
+if we pick an indexable profunctor we can define an indexedlenslike
+construction [fn:5]:
+#+BEGIN_SRC haskell
+type IndexedLensLike i f s t a b = forall p. Indexable i p => p a (f b) → s → f t 
+#+END_SRC
+
+[fn:5] Note the usage of src_haskell{forall p.}, which is granted by the
+src_haskell{Rank2Types} extension. You can learn about RankNTypes at [[https://ocharles.org.uk/blog/guest-posts/2014-12-18-rank-n-types.html][Oliver
+Charles' blog]].
+
 *** TODO Complete!
 This things are only here for completeness, they represent the indexed
 counterpart to the lens constructions we just examined.
