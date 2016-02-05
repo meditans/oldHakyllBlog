@@ -6,13 +6,28 @@ title: Blog todo list, before primetime
 CLOSED: [2016-01-23 Sat 01:05]
 There are two executables in the cabal project now: `site`, which is the Hakyll
 program, and `css`, which generates the css with Clay.
-** TODO Adjust the zoom issue
+** DONE Adjust the zoom issue
+CLOSED: [2016-02-04 Thu 16:18]
 I want a smooth zoom experience. I could take some ideas from Oliver Charles' blog.
-
-** TODO Create the structure for stub articles
+For now, I'm ok with how the zoom issue is handled by tufte.css. Closing.
+** DONE Create the structure for stub articles
+CLOSED: [2016-02-05 Fri 17:47]
 I want to be able to mark some articles as stub. They shouldn't be deployed to
-the site, but I should be able to see them offline.
-Check out http://geekplace.eu/flow/posts/2014-09-24-draft-posts-with-hakyll.html
+the site, but I should be able to see them offline. Check out
+http://geekplace.eu/flow/posts/2014-09-24-draft-posts-with-hakyll.html
+
+Various possibilities:
+- [[http://www.blaenkdenum.com/posts/drafts-in-hakyll/][blaenkdenum]] suggests applying a prefilter to take the command preview. The
+  upside is that it seems little code is needed.
+- [[http://geekplace.eu/flow/posts/2014-09-24-draft-posts-with-hakyll.html][flow]] suggests to put drafts in a draft folder, and then proposes a little bash
+  script to publish them.
+- [[https://github.com/limansky/limansky_me/blob/master/posts/2015-10-31-Draft-posts-with-Hakyll.md][limansky]] suggests to put drafts in a draft folder, and evoke it with a command
+  line option. There is some cruft involved.
+- [[http://jdreaver.com/posts/2014-06-22-math-programming-blog-hakyll.html][jdreaver]] suggests a very short method, which involves modifying the
+  postPattern
+
+This last jdreaver suggestion was what I implemented in the end.
+
 ** TODO Remove the date from the articles
 Let's just use chris done's site as a template for this. Did he blog about that?
 ** DONE Infrastructure for math rendering
@@ -22,8 +37,10 @@ I should be able to set up some latex rendering. Like in $\sum_{i=1}^n i^2$
 CLOSED: [2016-01-23 Sat 01:07]
 Fonts are now correctly deployed. Maybe in the future I could think about making
 an image for the header, without sending the font.
-** TODO Mobile version deployment
-I should check the compatibility of this site for mobile devices.
+** DONE Mobile version deployment
+CLOSED: [2016-02-04 Thu 16:11]
+I should check the compatibility of this site for mobile devices. This should be
+handled by tufte.css; I can check later but I close this issue for now.
 
 ** TODO Finish the lens series of posts
 Let's detail here what that means:
@@ -50,5 +67,10 @@ The css files are now automatically generated thanks to the `css` executable.
 Checking that links are ok?
 The answer is here https://groups.google.com/forum/#!topic/hakyll/XbB20ak441Q
 
-** TODO I should fix the code overflow
+** DONE I should fix the code overflow
+CLOSED: [2016-02-04 Thu 16:11]
 When the code lines are too wide, they overflow from the little nice box.
+This has been fixed.
+
+** TODO I should fontify the haskell code
+Like,for example, put a gracious symbol instead of ->.
