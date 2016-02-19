@@ -1,0 +1,8 @@
+---
+title: How to create a dash docset with stack
+author: Carlo Nucera
+---
+#+STARTUP: fninline
+
+Informations we may want: there is a common proposal for implementation [[https://github.com/philopon/haddocset/pull/29][at this
+issue]], the original information was on [[https://github.com/philopon/haddocset][haddocset readme]].
