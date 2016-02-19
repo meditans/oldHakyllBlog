@@ -46,3 +46,6 @@ type IndexPreservingLens s t a b = forall p f. (Conjoined p, Functor f) => p a (
 #+END_SRC
 etc etc. Note that src_haskell{Conjoined} is a further elaboration on
 src_haskell{Choice}, which I'm not explaining in detail.
+
+** Tree indexing
+I want a breath first indexing of the tree in Data.Tree
