@@ -164,34 +164,6 @@ that can be used to read an src_haskell{a} value from a src_haskell{s}, and set
 a particular location in a data structure (a "purely functional reference", as
 the documentation says).
 
-Let's do an example using the lenses in src_haskell{Data.Tree.Lens}, for the
-src_haskell{Data.Tree} in containers:
-
-#+BEGIN_SRC haskell
--- from Data.Tree
-data Tree a = Node { rootLabel :: a        -- ^ label value
-                   , subForest :: [Tree a] -- ^ child trees
-                   }
-
--- from Data.Tree.Lens
-root :: Lens' (Tree a) a
-#+END_SRC
-
-Remember, when you see a prime in this library, that it represents a simplified
-version of the normal type, in this case:
-
-#+BEGIN_SRC haskell
-type Lens' s a = Lens s s a a 
-#+END_SRC
-Which means that you still have a lens, which with you can access and edit a
-value (in this case, the root value), but you aren't permitted to change the
-type in writing the new one.
-
-So, let's declare a simple tree
-#+BEGIN_SRC haskell
-decl
-#+END_SRC
-
 Now, let's say that we want to view, or edit, zero or more locations in our
 structure: then,
 
@@ -240,23 +212,6 @@ type Getting r s a = (a → Const r a) → s → Const r s
 #+END_SRC
 We'll see more of this signature in the exercise section. Of course, you should
 think at a Getting r s a
-
-** Interesting exercises
-the ix instance
-
-the at instance
-
-the contains instance
-
-the tree example
-
-[1..10] & traversed . filtered even  %~ (*2)
-
-vediamo dei tipi
-#+BEGIN_SRC haskell
-traversed :: Traversable f => IndexedTraversal Int (f a) (f b) a b
-filtered :: (Choice p, Applicative f) => (a -> Bool) -> Optic' p f a a
-#+END_SRC
 
 ** Conclusion
 Now we explored the essential part of the module [[https://hackage.haskell.org/package/lens-4.13/docs/Control-Lens-Type.html][Control.Lens.Type]]. As an
