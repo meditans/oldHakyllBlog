@@ -1,0 +1,19 @@
+#!/usr/bin/emacs --script
+;read stdin into a temp buffer
+;go into org-mode
+;output the buffer as a string and pipe to stdout
+
+(with-temp-buffer
+  (progn
+    (let (line)
+      (while (setq line (ignore-errors (read-from-minibuffer "")))
+        (insert line "\n")))
+
+    ;; I need the last version of htmlize, which I stored and compiled in the
+    ;; private subdir of .emacs.d
+    (add-to-list 'load-path "~/.emacs.d/private/")
+    (org-mode)
+
+    (setq org-export-htmlize-output-type 'css)
+    (org-html-export-as-html)
+    (princ (buffer-string))))
